@@ -1,0 +1,53 @@
+---
+title: "DEMO: How Running Shoe Match Keeps Guides Current"
+slug: "demo-how-running-shoe-match-uses-live-data"
+description: "Sample content showing how an article can explain shoe data while reusable components load current product and ranking information."
+publishedDate: "2026-09-10"
+author: "Running Shoe Match Editorial"
+tags:
+  - "methodology"
+  - "shoe data"
+  - "demo"
+categories:
+  - "Behind the data"
+draft: false
+---
+
+<Callout title="Development sample" tone="warning">
+  This is **DEMO content** created to verify the MDX publishing system. The fictional shoes, retailers, scores, and descriptions below are not reviews, recommendations, or official rankings.
+</Callout>
+
+## A structured starting point
+
+Running Shoe Match is being built around structured shoe records rather than product claims copied from one page to another. A shoe profile can hold its current specifications, available metrics, ranking placements, and retailer options in one place.
+
+That separation matters for editorial content. A guide can focus on explaining *how to compare* shoes, while the embedded profile below asks the database for the latest public record each time the site refreshes its cached data.
+
+<ShoeCardBySlug slug="demo-aero-day-2" />
+
+## What stays current
+
+The MDX file contains only the stable shoe slug. It does not contain a price, affiliate URL, score, or copied specification. If an editor updates the shoe record or retailer links later, every article using the component can reflect that change without rewriting old prose.
+
+This pattern is intended for details that naturally change:
+
+- active retailer destinations and displayed prices
+- current public shoe specifications
+- a shoe's current publication status
+- the newest published ranking snapshot
+
+Historical statements should still be written as dated editorial facts. A sentence about what ranked first in a specific month should not silently change with the live component.
+
+## Rankings are published snapshots
+
+Rankings use versioned runs, so the site can select the newest published snapshot while preserving prior months for movement calculations. The preview below references only a category slug.
+
+<RankingPreview category="demo-daily-trainers" limit={3} />
+
+## Where to go next
+
+Read the [methodology overview](/methodology) for the intended evaluation approach, browse the current [shoe database](/shoes), or open the complete [rankings area](/rankings). These internal links help readers move from an explanation to the underlying data without turning the article into a storefront.
+
+<Callout title="Editorial rule">
+  Dynamic components are for current structured data. They should never be used to make an unsupported testing claim or to disguise demo records as production recommendations.
+</Callout>

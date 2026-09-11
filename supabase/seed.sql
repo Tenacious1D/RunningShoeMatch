@@ -276,31 +276,40 @@ where not exists (
   source_reference, effective_date, metric_version, confidence, notes, is_public
 )
 values
-  ('de000000-0000-4000-8000-000000000701', 'de000000-0000-4000-8000-000000000101', 'cushioning', 7.8, 78, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000702', 'de000000-0000-4000-8000-000000000101', 'stability', 6.5, 65, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000703', 'de000000-0000-4000-8000-000000000101', 'responsiveness', 8.2, 82, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000704', 'de000000-0000-4000-8000-000000000101', 'value', 8.0, 80, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000705', 'de000000-0000-4000-8000-000000000102', 'cushioning', 9.5, 95, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000706', 'de000000-0000-4000-8000-000000000102', 'stability', 6.0, 60, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000707', 'de000000-0000-4000-8000-000000000102', 'responsiveness', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000708', 'de000000-0000-4000-8000-000000000102', 'value', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000709', 'de000000-0000-4000-8000-000000000103', 'cushioning', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000710', 'de000000-0000-4000-8000-000000000103', 'stability', 5.8, 58, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000711', 'de000000-0000-4000-8000-000000000103', 'responsiveness', 9.3, 93, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000712', 'de000000-0000-4000-8000-000000000103', 'value', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000713', 'de000000-0000-4000-8000-000000000104', 'cushioning', 8.1, 81, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000714', 'de000000-0000-4000-8000-000000000104', 'stability', 9.2, 92, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000715', 'de000000-0000-4000-8000-000000000104', 'responsiveness', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000716', 'de000000-0000-4000-8000-000000000104', 'value', 7.5, 75, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000717', 'de000000-0000-4000-8000-000000000105', 'cushioning', 9.1, 91, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000718', 'de000000-0000-4000-8000-000000000105', 'stability', 7.0, 70, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000719', 'de000000-0000-4000-8000-000000000105', 'responsiveness', 7.8, 78, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000720', 'de000000-0000-4000-8000-000000000105', 'value', 6.5, 65, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000721', 'de000000-0000-4000-8000-000000000106', 'cushioning', 7.5, 75, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000722', 'de000000-0000-4000-8000-000000000106', 'stability', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000723', 'de000000-0000-4000-8000-000000000106', 'responsiveness', 7.4, 74, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true),
-  ('de000000-0000-4000-8000-000000000724', 'de000000-0000-4000-8000-000000000106', 'value', 9.2, 92, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', true)
+  ('de000000-0000-4000-8000-000000000701', 'de000000-0000-4000-8000-000000000101', 'cushioning', 7.8, 78, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000702', 'de000000-0000-4000-8000-000000000101', 'stability', 6.5, 65, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000703', 'de000000-0000-4000-8000-000000000101', 'responsiveness', 8.2, 82, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000704', 'de000000-0000-4000-8000-000000000101', 'value', 8.0, 80, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000705', 'de000000-0000-4000-8000-000000000102', 'cushioning', 9.5, 95, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000706', 'de000000-0000-4000-8000-000000000102', 'stability', 6.0, 60, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000707', 'de000000-0000-4000-8000-000000000102', 'responsiveness', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000708', 'de000000-0000-4000-8000-000000000102', 'value', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000709', 'de000000-0000-4000-8000-000000000103', 'cushioning', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000710', 'de000000-0000-4000-8000-000000000103', 'stability', 5.8, 58, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000711', 'de000000-0000-4000-8000-000000000103', 'responsiveness', 9.3, 93, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000712', 'de000000-0000-4000-8000-000000000103', 'value', 7.2, 72, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000713', 'de000000-0000-4000-8000-000000000104', 'cushioning', 8.1, 81, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000714', 'de000000-0000-4000-8000-000000000104', 'stability', 9.2, 92, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000715', 'de000000-0000-4000-8000-000000000104', 'responsiveness', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000716', 'de000000-0000-4000-8000-000000000104', 'value', 7.5, 75, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000717', 'de000000-0000-4000-8000-000000000105', 'cushioning', 9.1, 91, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000718', 'de000000-0000-4000-8000-000000000105', 'stability', 7.0, 70, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000719', 'de000000-0000-4000-8000-000000000105', 'responsiveness', 7.8, 78, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000720', 'de000000-0000-4000-8000-000000000105', 'value', 6.5, 65, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000721', 'de000000-0000-4000-8000-000000000106', 'cushioning', 7.5, 75, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000722', 'de000000-0000-4000-8000-000000000106', 'stability', 6.8, 68, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000723', 'de000000-0000-4000-8000-000000000106', 'responsiveness', 7.4, 74, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false),
+  ('de000000-0000-4000-8000-000000000724', 'de000000-0000-4000-8000-000000000106', 'value', 9.2, 92, 'demo_1_to_10', 'DEVELOPMENT/DEMO fixture', null, '2026-09-01', 'demo-v1', 0.5000, 'Fictional metric for development only.', false)
   on conflict (shoe_id, metric_key, effective_date, metric_version, data_source) do nothing;
+
+  update public.shoe_metrics
+  set
+    source_type = 'development_demo',
+    verification_status = 'development_demo',
+    is_public = true
+  where id between 'de000000-0000-4000-8000-000000000701'::uuid
+    and 'de000000-0000-4000-8000-000000000724'::uuid
+    and not is_public;
 
 -- Publish only this seed's still-draft snapshots after all results exist.
   update public.ranking_runs

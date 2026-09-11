@@ -1,0 +1,7 @@
+run_name,effective_date,methodology_version,run_notes,category_slug,shoe_slug,rank,score,component_scores_json,result_notes
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-daily-trainers,demo-aero-day-2,1,90,"{""fit"":91,""ride"":90,""value"":86}",Fictional demonstration result.
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-daily-trainers,demo-relay-tempo,2,87,"{""fit"":85,""ride"":91,""value"":82}",Fictional demonstration result.
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-daily-trainers,demo-pace-value,3,83,"{""fit"":82,""ride"":80,""value"":93}",Fictional demonstration result.
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-cushioned-shoes,demo-summit-cushion,1,92,"{""comfort"":95,""protection"":94,""value"":80}",Fictional demonstration result.
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-cushioned-shoes,demo-horizon-long-run,2,88,"{""comfort"":90,""protection"":92,""value"":79}",Fictional demonstration result.
+DEVELOPMENT DEMO: October 2026 Import,2026-10-01,demo-v1,DEVELOPMENT/DEMO data only; not an official ranking.,demo-cushioned-shoes,demo-guide-support,3,81,"{""comfort"":84,""protection"":86,""value"":78}",Fictional demonstration result.

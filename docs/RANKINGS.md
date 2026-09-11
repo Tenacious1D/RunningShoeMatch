@@ -20,7 +20,7 @@ render published snapshots and derive movement from their stored history.
 
 `ranking_categories` holds stable category identities. `ranking_runs` is the version/snapshot boundary for an effective date and methodology version, and one run may contain multiple categories. `ranking_results` joins a run, category, and shoe and stores total score, rank, version-specific component scores, and supporting metadata.
 
-A shoe is unique within each run/category. Rank values are intentionally not unique until the tie policy is decided. Published runs and their results are protected by database triggers from insertion, update, or deletion; a new month is always a new run. Public RLS policies expose only published runs and results whose category and shoe are also public.
+A shoe is unique within each run/category. The current CSV workflow and publication transaction require unique, contiguous ranks beginning at one; a future tie policy would require an explicit schema/import revision. Published runs and their results are protected by database triggers from insertion, update, or deletion; a new month is always a new run. Public RLS policies expose only published runs and results whose category and shoe are also public.
 
 ## Publication flow
 
@@ -116,6 +116,17 @@ Affiliate relationships must not silently determine ranking order. Ranking outpu
 Do not store affiliate URLs inside ranking snapshots, React components, or MDX. This avoids corrupting historical rank data when retailer links change.
 
 ## Admin workflow
+
+Recurring ranking updates now use the CSV workflow documented in
+`RANKING_IMPORTS.md`. A complete snapshot is dry-run against existing shoes and
+active categories, then imported atomically as a draft. Importing never
+publishes implicitly. The separate `rankings:publish` command calls the
+transactional `publish_ranking_run` database function after human review.
+
+The normalized CSV content fingerprint prevents duplicate snapshot imports.
+Because public queries already select the newest published run containing a
+category, publishing a new monthly or weekly run updates the selected data
+without changing the page template.
 
 Future admin capabilities may include:
 

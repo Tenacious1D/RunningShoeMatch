@@ -10,10 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { getPublishedBlogPosts } from "@/lib/content/blog";
 import { cn } from "@/lib/utils";
 import { getActiveRankingCategories } from "@/lib/data/rankings";
 import { getActiveShoes } from "@/lib/data/shoes";
-import { placeholderGuides } from "@/lib/placeholder-data";
 
 export const metadata: Metadata = {
   title: "Running Shoe Match | Find the Right Running Shoe",
@@ -40,6 +40,7 @@ const steps = [
 ] as const;
 
 export default async function HomePage() {
+  const latestGuides = getPublishedBlogPosts().slice(0, 3);
   const [featuredShoes, rankingCategories] = await Promise.all([
     getActiveShoes(3),
     getActiveRankingCategories(),
@@ -180,9 +181,23 @@ export default async function HomePage() {
             <SectionHeading eyebrow="Latest guides" title="Learn the language of running shoes" description="Practical explainers will help runners interpret specifications and compare options with more confidence." />
             <Link href="/blog" className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}>Visit the blog</Link>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {placeholderGuides.map((guide) => <ArticleCard key={guide.title} {...guide} />)}
-          </div>
+          {latestGuides.length ? (
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {latestGuides.map((guide) => (
+                <ArticleCard
+                  key={guide.slug}
+                  category={guide.categories[0] ?? "Guide"}
+                  title={guide.title}
+                  description={guide.description}
+                  href={`/blog/${guide.slug}`}
+                  publishedDate={guide.publishedDate}
+                  readingTimeMinutes={guide.readingTimeMinutes}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-10 rounded-lg border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">No guides are published yet.</p>
+          )}
         </Container>
       </section>
     </main>

@@ -45,8 +45,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `app/`: routes, layouts, metadata, and request handlers
 - `components/`: reusable UI components
 - `lib/supabase/`: Supabase client construction and session handling
+- `lib/admin/`: server-only authentication and explicit administrator authorization
+- `lib/matching/`: framework-independent quiz normalization and deterministic matching boundary
+- `scripts/import*.ts` and `scripts/import/`: local-only validated CSV import workflows, including transactional ranking snapshots
+- `data/templates/`: version-controlled import contracts; `data/imports/`: reviewed source CSVs
 - `docs/`: product and architecture decisions
-- Future `content/blog/`: MDX blog content
-- Future `supabase/migrations/`: reviewed database migrations
+- `content/blog/`: validated, repository-managed MDX blog content
+- `supabase/migrations/`: reviewed database migrations
 
 Before changing a subsystem, read its document in `docs/`.
+
+For ranking updates, follow `docs/RANKING_IMPORTS.md`: dry-run first, create a draft with the importer, and publish only with the separate explicit command. Never update a published ranking run.

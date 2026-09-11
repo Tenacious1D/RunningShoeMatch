@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+
+import { getSiteUrl } from "@/lib/site";
+
 import "./globals.css";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : process.env.NODE_ENV === "production"
-    ? "https://runningshoematch.com"
-    : "http://localhost:3000";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(getSiteUrl()),
   title: "Running Shoe Match",
   description: "Find the right running shoe for how you actually run.",
 };

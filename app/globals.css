@@ -101,3 +101,70 @@
     @apply py-16 sm:py-20 lg:py-24;
   }
 }
+
+@layer components {
+  .article-prose {
+    @apply text-base leading-8 text-foreground;
+  }
+
+  .article-prose > p,
+  .article-prose > ul,
+  .article-prose > ol,
+  .article-prose > blockquote,
+  .article-prose > pre,
+  .article-prose > hr {
+    @apply my-6;
+  }
+
+  .article-prose > h2 {
+    @apply mb-4 mt-12 scroll-mt-24 text-3xl font-bold tracking-tight;
+  }
+
+  .article-prose > h3 {
+    @apply mb-3 mt-9 scroll-mt-24 text-2xl font-bold tracking-tight;
+  }
+
+  .article-prose > ul,
+  .article-prose > ol {
+    @apply space-y-2 pl-6;
+  }
+
+  .article-prose > ul {
+    @apply list-disc;
+  }
+
+  .article-prose > ol {
+    @apply list-decimal;
+  }
+
+  .article-prose > blockquote {
+    @apply border-l-4 border-primary pl-5 italic text-muted-foreground;
+  }
+
+  .article-prose > pre {
+    @apply overflow-x-auto rounded-lg bg-foreground p-5 text-sm leading-6 text-background;
+  }
+
+  .article-prose > hr {
+    @apply border-border;
+  }
+
+  .article-prose > p a,
+  .article-prose > ul a,
+  .article-prose > ol a,
+  .article-prose > blockquote a {
+    @apply font-semibold text-primary underline decoration-primary/35 underline-offset-4 transition-colors hover:decoration-primary;
+  }
+
+  .article-prose :not(pre) > code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-[0.9em] font-semibold;
+  }
+
+  .article-prose table th {
+    @apply bg-surface px-4 py-3 font-bold;
+  }
+
+  .article-prose table td {
+    @apply border-t border-border px-4 py-3 text-muted-foreground;
+  }
+}

@@ -19,13 +19,17 @@ export type ShoeSummary = {
 
 export type ShoeMetric = {
   key: string;
+  kind: "evaluative" | "use_case";
   value: number;
   normalizedValue: number | null;
   unit: string | null;
+  sourceType: "manufacturer" | "review" | "lab_test" | "editorial_assessment" | "derived_methodology" | "development_demo";
   dataSource: string;
+  sourceReference: string | null;
   effectiveDate: string;
   version: string;
   confidence: number | null;
+  verificationStatus: "unverified" | "source_checked" | "cross_checked" | "methodology_reviewed" | "development_demo";
   notes: string | null;
 };
 
@@ -109,6 +113,13 @@ export type ShoeDetail = ShoeSummary & {
   modelYear: number | null;
   fullDescription: string | null;
   releaseDate: string | null;
+  specificationProvenance: {
+    sourceName: string | null;
+    sourceUrl: string | null;
+    verifiedAt: string | null;
+    verificationStatus: "unverified" | "source_checked" | "cross_checked" | "development_demo";
+    notes: string | null;
+  };
   metrics: ShoeMetric[];
   rankings: RankingPlacement[];
   retailerOffers: RetailerOffer[];

@@ -15,10 +15,16 @@ This document describes the intended architecture. It does not mean every route 
 - Typed public catalog models and server-only query modules under `lib/data/`
 - Data-driven shoe catalog, reusable shoe detail route, and affiliate retailer presentation
 - Data-driven ranking-category routes with snapshot selection and derived historical movement
+- Repository-managed MDX blog with validated frontmatter and live database-backed shoe/ranking embeds
+- Local TypeScript CSV import tools with schema validation, explicit dry-run/apply modes, and server-only privileged credentials
+- Transactional ranking-snapshot imports with content-based idempotency and a separate explicit publication operation
+- Typed, framework-independent matching contracts with intentionally non-operational engine stubs
+- Supabase Auth-backed private admin foundation with database-enforced administrator membership
+- Route metadata, stable production canonicals, a data-driven sitemap, and crawler exclusions for private/development routes
 - File-system routing under `app/`
 - npm for package management
 
-The repository does not currently contain quiz logic, the ranking engine, official production catalog/ranking data, or the MDX pipeline. Fictional development fixtures are available through the repeatable seed workflow.
+The repository does not currently contain quiz logic, the ranking engine, or official production catalog/ranking data. Fictional development fixtures and one clearly labeled demo article are available for application testing.
 
 ## Public routes
 
@@ -34,12 +40,35 @@ The repository does not currently contain quiz logic, the ranking engine, offici
 | `/blog/[slug]` | MDX article | Static generation from repository content |
 | `/about` | About and high-level methodology | Static |
 | `/methodology` | Detailed evaluation and ranking explanation | Static |
+| `/affiliate-disclosure` | Affiliate relationship disclosure | Static |
+| `/privacy` | Privacy-policy placeholder | Static |
+| `/contact` | Contact-method placeholder | Static |
 
 Example ranking slugs include `best-daily-trainers`, `best-cushioned-running-shoes`, and `best-stability-running-shoes`.
 
 ## Admin routes
 
-`/admin` will be a private dashboard protected by server-verified authentication and authorization. Future tools may manage shoes, affiliate links, imports, ranking data, and ranking snapshot publication.
+`/admin`, `/admin/shoes`, `/admin/rankings`, and `/admin/imports` form a private,
+read-only operational area. `/admin/login` uses the existing browser Supabase
+client for password authentication. The protected route-group layout and every
+admin data-access function call the centralized `lib/admin/auth.ts` authorization
+boundary on the server.
+
+Authentication and authorization are separate checks:
+
+1. `supabase.auth.getClaims()` verifies the cookie-backed Supabase session.
+2. The authenticated client selects its own row from `public.admin_users`.
+3. If either check fails, protected routes redirect to `/admin/login`.
+4. Admin queries still run with the user's publishable-key session and remain
+   subject to grants and RLS; the web application never uses the service key.
+
+Database policies call a private `SECURITY DEFINER` membership helper to let an
+allowlisted user read operational rows, including drafts and non-public catalog
+records. No browser role receives admin write privileges in this phase.
+
+Future tools may manage shoes, affiliate links, imports, ranking data, and
+ranking publication, but each mutation must re-run server authorization and add
+an explicit least-privilege database policy or server-only transaction.
 
 Hiding admin navigation is not authorization. Every admin page, server action, and route handler must verify the user's privileges on the server. Privileged Supabase credentials must never be included in client bundles.
 
@@ -111,6 +140,7 @@ The quiz UI owns question presentation and answer collection. A separate engine 
 
 - Supabase/PostgreSQL owns structured application data such as shoes, attributes, retailers, affiliate links, categories, and ranking snapshots.
 - Repository-managed MDX owns blog content initially.
+- MDX stores stable editorial prose and database slugs; current product data, ranks, prices, and affiliate URLs remain in Supabase and are resolved by server components.
 - React components display data but are not a source of truth for shoes, rankings, or retailer URLs.
 - Ranking publications are immutable snapshots rather than mutable current-rank fields.
 
@@ -118,12 +148,14 @@ See `DATABASE.md`, `QUIZ.md`, `RANKINGS.md`, and `CONTENT.md` for subsystem deta
 
 ## SEO architecture
 
-The application should support:
+The current SEO foundation includes:
 
 - Server rendering or static generation according to freshness needs
 - Route-specific metadata and canonical URLs
-- `sitemap.xml` and `robots.txt`
-- Structured data when page models are defined
+- A generated `sitemap.xml` containing static pages, published MDX articles, public shoes, and active ranking categories
+- A generated `robots.txt` that excludes admin, authentication, development, and design-system routes
+- A stable production canonical origin of `https://runningshoematch.com`
+- Structured data remains future work, after production page models and claims are approved
 - Intentional internal links among shoes, rankings, methodology, and articles
 - Stable, human-readable slugs
 
@@ -131,7 +163,7 @@ Dynamic shoe and ranking routes must generate their visible content and metadata
 
 ## Visual design system
 
-Public pages share their site shell through the `app/(site)/` route group. Authentication and protected starter routes remain outside that group so they can evolve independently.
+Public pages share their site shell through the `app/(site)/` route group. The private admin area and its password-recovery routes remain outside that group. Unused Supabase starter tutorial, signup, and generic protected routes have been removed.
 
 Reusable visual responsibilities are separated as follows:
 
@@ -153,5 +185,6 @@ The `/design-system` route documents these primitives during development and ret
 ## Current non-goals
 
 The current application does not implement quiz logic, the ranking algorithm,
-admin tools, the MDX pipeline, or analytics. The public shoe catalog and ranking
-snapshot pages are read-only and data-driven.
+admin mutation tools, browser uploads, or analytics. The public shoe catalog,
+ranking snapshots, MDX article embeds, and private admin summaries are
+read-only and data-driven.

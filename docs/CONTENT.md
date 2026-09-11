@@ -4,44 +4,48 @@
 
 Blog content will initially be file-based MDX stored in the repository, not in WordPress or Supabase. Structured shoe, ranking, retailer, and affiliate data belongs in Supabase/PostgreSQL.
 
-No MDX pipeline or article is created during the documentation phase.
+The current implementation uses the official Next.js MDX integration, validated YAML frontmatter, and repository-managed article files. See `BLOGGING.md` for the publishing workflow.
 
 ## Intended routes and files
 
 ```text
 content/blog/<article-slug>.mdx
-app/blog/page.tsx
-app/blog/[slug]/page.tsx
+app/(site)/blog/page.tsx
+app/(site)/blog/[slug]/page.tsx
 ```
 
-`/blog` will list published articles. `/blog/[slug]` will use one reusable article template that reads repository content and generates route-specific metadata.
+`/blog` lists published articles. `/blog/[slug]` uses one reusable article template that reads repository content and generates route-specific metadata.
 
 ## Suggested frontmatter
 
-The initial content model should include only fields the product actually uses. A likely starting point is:
+The implemented content model is:
 
 ```yaml
 title: "Article title"
 description: "Search and social summary"
 slug: "article-slug"
-publishedAt: "YYYY-MM-DD"
-updatedAt: "YYYY-MM-DD"
+publishedDate: "YYYY-MM-DD"
+updatedDate: "YYYY-MM-DD"
 author: "Author name"
-status: "draft | published"
+image: "/blog/optional-image.jpg"
+imageAlt: "Required when image is set"
 tags:
   - "daily trainers"
+categories:
+  - "Shoe guides"
+draft: false
 ```
 
-The final schema should be validated at build time. Optional fields should not be added speculatively.
+Frontmatter is validated while blog routes are built. The file name and slug must match, dates use `YYYY-MM-DD`, and duplicate slugs fail the build.
 
 ## Publishing rules
 
 - Use stable, lowercase, hyphenated slugs.
-- Do not publish drafts in production indexes, feeds, or sitemaps.
+- Do not publish drafts in indexes or article routes.
 - Treat published dates as editorial facts, not filesystem timestamps.
 - Update `updatedAt` only for meaningful editorial changes.
 - Validate required frontmatter and duplicate slugs during the build.
-- Keep MDX components on a small allowlist.
+- Keep MDX components on the allowlist in `mdx-components.tsx`.
 
 ## Structured-data integration
 
@@ -53,7 +57,7 @@ If an article makes a historical claim that must not change, store it as editori
 
 ## SEO requirements
 
-Each article should support:
+Each article supports:
 
 - A unique title and description
 - A canonical URL under `https://runningshoematch.com/blog/<slug>`
@@ -83,7 +87,7 @@ Product imagery used across multiple pages should be associated with structured 
 
 ## Build and rendering
 
-Blog pages should be statically generated where practical. The build must fail clearly for invalid frontmatter, missing required fields, duplicate slugs, or unsupported MDX components.
+Blog pages are statically discovered and generated from published repository content. Shoe and ranking embeds remain server components backed by the cached public Supabase data layer. The build fails clearly for invalid frontmatter, missing required fields, or duplicate slugs.
 
 The content loader should remain separate from page presentation so storage can change later without rewriting article UI.
 

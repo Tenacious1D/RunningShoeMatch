@@ -1,8 +1,8 @@
 # Running Shoe Match
 
-Running Shoe Match will help runners find shoes suited to how they actually run. This repository contains the foundation for the future quiz, shoe database, rankings, shoe pages, affiliate links, editorial content, administration, and analytics.
+Running Shoe Match helps runners compare shoes using structured catalog data, versioned rankings, and—after its rules are approved—a deterministic guided matching quiz.
 
-The current application includes the public placeholder experience, Supabase SSR connection foundation, first database schema, and clearly labeled development fixtures. It does not yet include quiz logic or a ranking algorithm.
+The application currently includes data-driven shoe and ranking pages, repository-managed MDX articles with live database embeds, secure CSV import workflows, a read-only private admin area, and clearly labeled development fixtures. The matching engine boundary deliberately fails closed: no quiz questions, match weights, or ranking formula have been invented.
 
 ## Technology
 
@@ -34,7 +34,7 @@ The current application includes the public placeholder experience, Supabase SSR
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_REPLACE_ME
    ```
 
-   The optional `SUPABASE_URL` and `SUPABASE_SECRET_KEY` variables are reserved for future trusted server-side admin and import operations. They are not needed yet.
+   Add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` only when running the local CSV import or ranking-publication commands. They are server-only and are never used by browser code.
 
 4. Start or restart the development server:
 
@@ -94,11 +94,37 @@ npm run db:validate:linked
 
 Do not put the database password, access token, or secret API key in source files or command history.
 
+## Data imports
+
+Both import workflows require an explicit mode. Always dry-run the reviewed CSV first:
+
+```powershell
+npm run import:shoes -- data/imports/my-shoes.csv --dry-run
+npm run import:shoes -- data/imports/my-shoes.csv --apply
+
+npm run import:rankings -- data/imports/my-rankings.csv --dry-run
+npm run import:rankings -- data/imports/my-rankings.csv --apply
+npm run rankings:publish -- <ranking-run-id>
+```
+
+Shoe imports upsert by stable shoe slug. Ranking imports create an atomic draft snapshot and use a semantic content hash to make repeated imports idempotent. Publication is a separate transaction and never overwrites older published runs. See `docs/IMPORTING.md` and `docs/RANKING_IMPORTS.md` before importing real data.
+
+## Implemented routes
+
+- Public: `/`, `/quiz`, `/shoes`, `/shoes/[slug]`, `/rankings`, `/rankings/[slug]`, `/blog`, `/blog/[slug]`, `/about`, `/methodology`, `/affiliate-disclosure`, `/privacy`, and `/contact`
+- Private: `/admin`, `/admin/shoes`, `/admin/rankings`, and `/admin/imports`
+- Development only: `/dev/database` and `/design-system`
+- SEO metadata: `/robots.txt` and `/sitemap.xml`
+
 ## Checks
 
 ```bash
+npm test
 npm run lint
 npm run build
+npm run db:validate
+npx supabase test db --local supabase/tests/database
+npx supabase db advisors --local
 ```
 
 ## Environment safety
