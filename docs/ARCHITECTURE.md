@@ -12,10 +12,13 @@ This document describes the intended architecture. It does not mean every route 
 - Tailwind CSS
 - Supabase clients based on `@supabase/ssr`, with server-only configuration and development connectivity diagnostics
 - Version-controlled initial PostgreSQL schema, RLS policies, and pgTAP database tests under `supabase/`
+- Typed public catalog models and server-only query modules under `lib/data/`
+- Data-driven shoe catalog, reusable shoe detail route, and affiliate retailer presentation
+- Data-driven ranking-category routes with snapshot selection and derived historical movement
 - File-system routing under `app/`
 - npm for package management
 
-The repository does not currently contain quiz logic, the ranking engine, seed/catalog data, or the MDX pipeline.
+The repository does not currently contain quiz logic, the ranking engine, official production catalog/ranking data, or the MDX pipeline. Fictional development fixtures are available through the repeatable seed workflow.
 
 ## Public routes
 
@@ -73,6 +76,20 @@ docs/                   Architecture and product documentation
 ```
 
 These directories should be introduced only when implementation work requires them.
+
+### Current public data access
+
+Public catalog reads are implemented in `lib/data/shoes.ts`,
+`lib/data/rankings.ts`, and `lib/data/retailers.ts`. These server-only modules
+return application-facing models from `lib/data/types.ts`; React components do
+not issue raw Supabase queries. A dedicated anonymous server client in
+`lib/supabase/public.ts` uses only the publishable key, so public reads remain
+subject to the same grants and RLS policies as any other anonymous request.
+
+Public shoe and ranking data is cached for one hour with tag boundaries for
+shoes, metrics, rankings, categories, and retailers. Future admin publication
+workflows should invalidate the relevant tags after reviewed changes.
+Cookie-backed Supabase clients remain separate for future authenticated areas.
 
 ## Recommendation flow
 
@@ -135,4 +152,6 @@ The `/design-system` route documents these primitives during development and ret
 
 ## Current non-goals
 
-The current foundation does not implement the database, quiz logic, ranking algorithm, admin tools, MDX pipeline, or analytics.
+The current application does not implement quiz logic, the ranking algorithm,
+admin tools, the MDX pipeline, or analytics. The public shoe catalog and ranking
+snapshot pages are read-only and data-driven.

@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
 import { ShoeCard } from "@/components/shoes/shoe-card";
+import { ShoeRecommendationModal } from "@/components/shoes/shoe-recommendation-modal";
 import { ShoeScore } from "@/components/shoes/shoe-score";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { getActiveShoes, getShoeBySlug } from "@/lib/data/shoes";
 
 export const metadata: Metadata = {
   title: "Design System | Running Shoe Match",
@@ -24,10 +26,15 @@ const colorTokens = [
   { name: "Warning", className: "bg-warning", value: "Attention" },
 ] as const;
 
-export default function DesignSystemPage() {
+export default async function DesignSystemPage() {
   if (process.env.NODE_ENV !== "development") {
     notFound();
   }
+
+  const shoes = await getActiveShoes(3);
+  const recommendationShoe = shoes[0]
+    ? await getShoeBySlug(shoes[0].slug)
+    : null;
 
   return (
     <main className="pb-24">
@@ -145,33 +152,33 @@ export default function DesignSystemPage() {
         </section>
 
         <section>
-          <SectionHeading eyebrow="Shoe component" title="Shoe card placeholders" description="These examples demonstrate reusable data presentation only; no ranking or affiliate logic is connected." />
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <ShoeCard
-              brand="Example Running"
-              name="Daily Trainer 01"
-              category="Daily trainer"
-              score={91}
-              tags={["Neutral", "Road"]}
-              specs={[{ label: "Weight", value: "8.7 oz" }, { label: "Drop", value: "8 mm" }, { label: "Stack", value: "34 mm" }]}
-            />
-            <ShoeCard
-              brand="Sample Athletics"
-              name="Cushion Max 02"
-              category="Max cushion"
-              score={84}
-              tags={["Plush", "Road"]}
-              specs={[{ label: "Weight", value: "10.2 oz" }, { label: "Drop", value: "6 mm" }, { label: "Stack", value: "40 mm" }]}
-            />
-            <ShoeCard
-              brand="Demo Footwear"
-              name="Stable Run 03"
-              category="Stability"
-              score={76}
-              tags={["Support", "Daily"]}
-              specs={[{ label: "Weight", value: "9.9 oz" }, { label: "Drop", value: "10 mm" }, { label: "Stack", value: "36 mm" }]}
-            />
-          </div>
+          <SectionHeading eyebrow="Shoe component" title="Data-backed shoe cards" description="These cards use the same Supabase records as the public catalog and dynamic shoe pages." />
+          {shoes.length ? (
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {shoes.map((shoe) => <ShoeCard key={shoe.id} shoe={shoe} />)}
+            </div>
+          ) : (
+            <p className="mt-8 rounded-lg border border-dashed border-border bg-surface p-6 text-sm text-muted-foreground">Seed the development database to preview data-backed shoe cards.</p>
+          )}
+        </section>
+
+        <section>
+          <SectionHeading eyebrow="Quiz result UI" title="Recommendation modal" description="This development example demonstrates presentation only. Its sample score and explanation are not produced by matching logic." />
+          <Card className="mt-8">
+            <CardContent className="p-6 sm:p-8">
+              {recommendationShoe ? (
+                <ShoeRecommendationModal
+                  shoe={recommendationShoe}
+                  matchScore={88}
+                  explanation="Development UI example only: a future deterministic matching engine will provide a runner-specific score and explanation here."
+                  retailerOffers={recommendationShoe.retailerOffers}
+                  alternatives={shoes.filter((shoe) => shoe.id !== recommendationShoe.id).slice(0, 2)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">Seed the development database to preview the recommendation modal with a shoe record.</p>
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         <section>

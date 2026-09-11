@@ -6,16 +6,16 @@ import { Card, CardContent } from "@/components/ui/card";
 
 type RankingCategoryCardProps = {
   title: string;
-  description: string;
+  description: string | null;
   href: string;
-  surface?: string;
+  isDemo?: boolean;
 };
 
 function RankingCategoryCard({
   title,
   description,
   href,
-  surface,
+  isDemo = false,
 }: RankingCategoryCardProps) {
   return (
     <Link
@@ -28,14 +28,18 @@ function RankingCategoryCard({
             <span className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
               <BarChart3 className="h-5 w-5" aria-hidden="true" />
             </span>
-            <Badge variant="neutral">Coming soon</Badge>
+            <Badge variant={isDemo ? "outline" : "success"}>
+              {isDemo ? "Demo category" : "Active"}
+            </Badge>
           </div>
           <h3 className="mt-6 text-xl font-bold tracking-tight">{title}</h3>
-          <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">{description}</p>
+          <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
+            {description ?? "Published ranking snapshots for this running shoe category."}
+          </p>
           <div className="mt-6 flex items-center justify-between border-t border-border pt-4 text-sm font-semibold">
-            <span className="text-muted-foreground">{surface ?? "Running"}</span>
+            <span className="text-muted-foreground">Versioned rankings</span>
             <span className="inline-flex items-center gap-1 text-primary">
-              Preview category
+              View rankings
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
             </span>
           </div>

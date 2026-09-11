@@ -2,7 +2,7 @@
 
 Running Shoe Match will help runners find shoes suited to how they actually run. This repository contains the foundation for the future quiz, shoe database, rankings, shoe pages, affiliate links, editorial content, administration, and analytics.
 
-The current application includes the public placeholder experience and Supabase SSR connection foundation. It does not yet include the database schema, quiz logic, or ranking algorithm.
+The current application includes the public placeholder experience, Supabase SSR connection foundation, first database schema, and clearly labeled development fixtures. It does not yet include quiz logic or a ranking algorithm.
 
 ## Technology
 
@@ -55,9 +55,21 @@ Install and start Docker Desktop or another Docker-compatible runtime, then vali
 ```bash
 npx supabase start
 npx supabase db reset --local
+npm run db:validate
 npx supabase test db --local supabase/tests/database
 npx supabase db advisors --local
 ```
+
+`db reset` applies the migrations and then `supabase/seed.sql`. To reapply the
+idempotent demo inserts without resetting the local database, run:
+
+```bash
+npm run db:seed
+npm run db:validate
+```
+
+All seed records are fictional, visibly marked `DEVELOPMENT/DEMO`, and use
+reserved `.example` retailer URLs. Never seed a production project.
 
 To apply a reviewed migration to the hosted project, authenticate and link the CLI, run a dry run, then push deliberately:
 
@@ -69,7 +81,19 @@ npx supabase db push --linked
 npx supabase db advisors --linked
 ```
 
+For a linked **development-only** project, the guarded seed command requires an
+explicit PowerShell confirmation and verifies that the CLI link matches
+`.env.local`:
+
+```powershell
+$env:RSM_ALLOW_LINKED_DEMO_SEED = "YES"
+npm run db:seed:linked
+Remove-Item Env:RSM_ALLOW_LINKED_DEMO_SEED
+npm run db:validate:linked
+```
+
 Do not put the database password, access token, or secret API key in source files or command history.
+
 ## Checks
 
 ```bash

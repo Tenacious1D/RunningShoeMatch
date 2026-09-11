@@ -57,25 +57,25 @@ values
   ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000012', 'cushioning', 8, 80, 'editorial', '2026-09-01', 'v1', true);
 
 set local role anon;
-select is((select count(*) from public.brands), 1::bigint, 'anon sees brands with public shoes only');
-select is((select count(*) from public.shoes), 1::bigint, 'anon sees public shoes only');
-select is((select count(*) from public.retailers), 1::bigint, 'anon sees active retailers only');
-select is((select count(*) from public.shoe_retailer_links), 1::bigint, 'anon sees active links for public shoes and retailers only');
-select is((select count(*) from public.ranking_categories), 1::bigint, 'anon sees active categories only');
-select is((select count(*) from public.ranking_runs), 1::bigint, 'anon sees published runs only');
-select is((select count(*) from public.ranking_results), 1::bigint, 'anon sees results whose full publication chain is public');
-select is((select count(*) from public.shoe_metrics), 1::bigint, 'anon sees public metrics for public shoes only');
+select is((select count(*) from public.brands where id between '00000000-0000-0000-0000-000000000001' and '00000000-0000-0000-0000-000000000002'), 1::bigint, 'anon sees brands with public shoes only');
+select is((select count(*) from public.shoes where id between '00000000-0000-0000-0000-000000000011' and '00000000-0000-0000-0000-000000000012'), 1::bigint, 'anon sees public shoes only');
+select is((select count(*) from public.retailers where id between '00000000-0000-0000-0000-000000000021' and '00000000-0000-0000-0000-000000000022'), 1::bigint, 'anon sees active retailers only');
+select is((select count(*) from public.shoe_retailer_links where id between '00000000-0000-0000-0000-000000000031' and '00000000-0000-0000-0000-000000000033'), 1::bigint, 'anon sees active links for public shoes and retailers only');
+select is((select count(*) from public.ranking_categories where id between '00000000-0000-0000-0000-000000000041' and '00000000-0000-0000-0000-000000000042'), 1::bigint, 'anon sees active categories only');
+select is((select count(*) from public.ranking_runs where id between '00000000-0000-0000-0000-000000000051' and '00000000-0000-0000-0000-000000000052'), 1::bigint, 'anon sees published runs only');
+select is((select count(*) from public.ranking_results where id between '00000000-0000-0000-0000-000000000061' and '00000000-0000-0000-0000-000000000064'), 1::bigint, 'anon sees results whose full publication chain is public');
+select is((select count(*) from public.shoe_metrics where id between '00000000-0000-0000-0000-000000000071' and '00000000-0000-0000-0000-000000000073'), 1::bigint, 'anon sees public metrics for public shoes only');
 
 set local role postgres;
 set local role authenticated;
-select is((select count(*) from public.brands), 1::bigint, 'authenticated public access sees brands with public shoes only');
-select is((select count(*) from public.shoes), 1::bigint, 'authenticated public access sees public shoes only');
-select is((select count(*) from public.retailers), 1::bigint, 'authenticated public access sees active retailers only');
-select is((select count(*) from public.shoe_retailer_links), 1::bigint, 'authenticated public access sees active public links only');
-select is((select count(*) from public.ranking_categories), 1::bigint, 'authenticated public access sees active categories only');
-select is((select count(*) from public.ranking_runs), 1::bigint, 'authenticated public access sees published runs only');
-select is((select count(*) from public.ranking_results), 1::bigint, 'authenticated public access sees fully public results only');
-select is((select count(*) from public.shoe_metrics), 1::bigint, 'authenticated public access sees public metrics only');
+select is((select count(*) from public.brands where id between '00000000-0000-0000-0000-000000000001' and '00000000-0000-0000-0000-000000000002'), 1::bigint, 'authenticated public access sees brands with public shoes only');
+select is((select count(*) from public.shoes where id between '00000000-0000-0000-0000-000000000011' and '00000000-0000-0000-0000-000000000012'), 1::bigint, 'authenticated public access sees public shoes only');
+select is((select count(*) from public.retailers where id between '00000000-0000-0000-0000-000000000021' and '00000000-0000-0000-0000-000000000022'), 1::bigint, 'authenticated public access sees active retailers only');
+select is((select count(*) from public.shoe_retailer_links where id between '00000000-0000-0000-0000-000000000031' and '00000000-0000-0000-0000-000000000033'), 1::bigint, 'authenticated public access sees active public links only');
+select is((select count(*) from public.ranking_categories where id between '00000000-0000-0000-0000-000000000041' and '00000000-0000-0000-0000-000000000042'), 1::bigint, 'authenticated public access sees active categories only');
+select is((select count(*) from public.ranking_runs where id between '00000000-0000-0000-0000-000000000051' and '00000000-0000-0000-0000-000000000052'), 1::bigint, 'authenticated public access sees published runs only');
+select is((select count(*) from public.ranking_results where id between '00000000-0000-0000-0000-000000000061' and '00000000-0000-0000-0000-000000000064'), 1::bigint, 'authenticated public access sees fully public results only');
+select is((select count(*) from public.shoe_metrics where id between '00000000-0000-0000-0000-000000000071' and '00000000-0000-0000-0000-000000000073'), 1::bigint, 'authenticated public access sees public metrics only');
 
 set local role postgres;
 select * from finish();

@@ -4,7 +4,9 @@
 
 Running Shoe Match will publish frequently updated, category-specific shoe rankings based on structured data and a deterministic methodology. Ranking calculations must live outside React components and must not use an LLM.
 
-No ranking algorithm is implemented yet. The database now provides versioned `ranking_runs` and `ranking_results` storage for future deterministic output.
+No ranking algorithm is implemented yet. The database provides versioned
+`ranking_runs` and `ranking_results` storage, and the public ranking pages now
+render published snapshots and derive movement from their stored history.
 
 ## Ranking concepts
 
@@ -62,7 +64,9 @@ Data-access and publication services should orchestrate loading candidates, invo
 
 ## Category pages
 
-`/rankings/[slug]` will be one reusable page template backed by a ranking definition and selected published snapshot. Do not create a separate React page per category.
+`/rankings` loads every active category from Supabase. `/rankings/[slug]` is one
+reusable page template backed by a category and its selected published snapshot;
+there is no separate React page per category.
 
 Examples:
 
@@ -71,6 +75,33 @@ Examples:
 - `/rankings/best-stability-running-shoes`
 
 The page model should support category copy, methodology links, current ranked items, prior-position comparisons, relevant shoe links, publication date, and appropriate disclosures.
+
+## Implemented public query model
+
+`lib/data/rankings.ts` owns public ranking queries and history derivation. Page
+components do not contain raw Supabase queries or movement calculations.
+
+For a category page, the data layer:
+
+1. Resolves the active category by slug.
+2. Selects the newest two published ranking runs that contain a result for that category.
+3. Loads the newest run's results in rank order with public shoe, brand, and active retailer-link data.
+4. Loads the prior run's shoe/rank pairs when that run exists.
+5. Joins prior ranks by `shoe_id` and derives upward, downward, unchanged, or new-entry movement.
+
+Movement is never stored as a separate field. A positive improvement is
+`previous rank - current rank`; a shoe missing from the previous snapshot is
+shown as `NEW`. When no previous snapshot exists, the UI identifies the current
+run as the first published snapshot rather than labeling every shoe new.
+
+The page model exposes numeric component scores already preserved in
+`ranking_results.component_scores`; the UI does not generate unsupported prose
+or claims from those values. Affiliate calls to action are resolved from current
+retailer-link rows and remain independent of the immutable ranking snapshot.
+
+Seeded development data is detected from its explicit demo markers. In
+development mode, ranking pages show a prominent notice that the fixtures are
+not official rankings.
 
 ## Scoring transparency
 
@@ -115,6 +146,18 @@ Unit tests should cover eligibility, scoring boundaries, tie-breaking, missing d
 Ranking pages should expose stable canonical URLs and route-specific metadata derived from the same ranking definition shown on the page. Use server rendering or static generation with explicit revalidation after publication.
 
 Include visible publication/update dates. Structured data may be added later when the page model and claims are finalized.
+
+The current data-access functions use one-hour Next.js cache profiles and
+ranking-specific cache tags. Active category slugs are prerendered at build
+time, while the reusable dynamic route can render newly introduced slugs on
+demand. A future authorized publication action should invalidate `rankings`,
+`ranking-categories` when category state changes, and the affected
+`ranking-{slug}` tag so the newest published run becomes visible immediately.
+
+Publishing requires no page redesign: insert a new `ranking_run`, insert its
+category results, validate the draft, and transition the run to `published`.
+The next data refresh selects it as current and compares it with what was
+previously current.
 
 ## Deferred decisions
 

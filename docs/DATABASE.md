@@ -2,9 +2,31 @@
 
 ## Current status
 
-The first application schema is implemented as the version-controlled migration in `supabase/migrations/20260911014309_initial_running_shoe_schema.sql`. It creates eight application tables, their constraints and indexes, timestamp and immutability triggers, explicit Data API grants, and Row Level Security policies. No category, shoe, retailer, or ranking seed data is included.
+The first application schema is implemented as the version-controlled migration in `supabase/migrations/20260911014309_initial_running_shoe_schema.sql`. It creates eight application tables, their constraints and indexes, timestamp and immutability triggers, explicit Data API grants, and Row Level Security policies. `supabase/seed.sql` contains fictional development fixtures; it is not production content or an official ranking publication.
 
 Supabase/PostgreSQL owns structured application data. Database access should remain isolated behind server-side data-access modules rather than scattered across routes or UI components.
+
+## Application data-access layer
+
+Public shoe reads are isolated in:
+
+- `lib/data/shoes.ts` for catalog summaries, public slugs, complete shoe profiles, and latest public metrics
+- `lib/data/rankings.ts` for the newest published placement per category for a shoe
+- `lib/data/retailers.ts` for active shoe-specific retailer offers
+- `lib/data/types.ts` for serializable application-facing models shared by server-rendered pages and the client-side recommendation modal
+
+The data modules use `lib/supabase/public.ts`, an anonymous server-only client
+configured with the public URL and publishable key. It does not use privileged
+credentials or bypass RLS. Supabase response shapes are overridden explicitly
+at query boundaries and then mapped from database column names to stable
+application models.
+
+The `/shoes` catalog requests only active public shoes. The reusable
+`/shoes/[slug]` route can display any public lifecycle state so discontinued or
+upcoming shoes degrade gracefully instead of disappearing unexpectedly. Shoe
+detail queries compose current metrics, ranking placements, and retailer offers
+through the data layer. The same returned model is passed to the development
+recommendation-modal example, preserving one source of truth for shoe data.
 
 ## Schema overview
 
@@ -125,14 +147,64 @@ The Supabase CLI is pinned as a development dependency. With a Docker-compatible
 ```bash
 npx supabase start
 npx supabase db reset --local
+npm run db:validate
 npx supabase test db --local supabase/tests/database
 npx supabase db advisors --local
 ```
 
-The pgTAP suites under `supabase/tests/database/` cover schema objects, read-only grants, RLS visibility, duplicate prevention, and published-history immutability. Docker is not currently installed on this workstation, so these database-execution checks must be run after Docker Desktop or another compatible runtime is available.
+The pgTAP suites under `supabase/tests/database/` cover schema objects, read-only grants, RLS visibility, duplicate prevention, and published-history immutability.
+
+## Development/demo seed data
+
+`supabase/seed.sql` is the repeatable fixture source. Supabase runs it after
+migrations during `db reset` because `[db.seed]` is enabled in
+`supabase/config.toml`. It contains:
+
+- 3 fictional brands
+- 6 fictional running shoes
+- 3 fictional retailers and 12 placeholder retailer links
+- 24 fictional metric observations
+- 2 demo ranking categories
+- 2 dated demo ranking snapshots and 12 results
+
+Every user-facing name or description is marked `DEVELOPMENT/DEMO`, shoe and
+ranking metadata include a demo flag, and retailer destinations use reserved
+`.example` domains with no tracking identifiers. Fixed UUIDs and conflict-safe
+inserts make repeated execution idempotent. The file uses one transaction and
+never deletes existing data. A collision guard aborts before writing if its
+reserved IDs already belong to non-demo records.
+
+Local workflows are intentionally the default:
+
+```bash
+npm run db:seed
+npm run db:validate
+```
+
+`npm run db:seed` and `npm run db:validate` always use `--local`. The linked
+development seed is separated because accidentally adding immutable demo ranking
+snapshots to production would be difficult to undo. To seed a linked development
+project from PowerShell:
+
+```powershell
+$env:RSM_ALLOW_LINKED_DEMO_SEED = "YES"
+npm run db:seed:linked
+Remove-Item Env:RSM_ALLOW_LINKED_DEMO_SEED
+npm run db:validate:linked
+```
+
+The linked seed wrapper refuses to run without the confirmation variable and
+also requires the linked project reference to match the project URL in
+`.env.local`. The confirmation is authorization for one shell session, not a
+credential, and should be removed immediately afterward.
+
+`supabase/validation/validate_database.sql` is read-only and raises an error if
+shoe-brand references, slug uniqueness, ranking references, ranking-result
+uniqueness, or active retailer-link references are invalid. A successful run
+prints one `PASS` row for each invariant.
 
 Before applying to the hosted project, authenticate and link the CLI, review the pending migration, then push it deliberately. Do not paste database passwords or access tokens into source files or chat.
 
 ## Deferred decisions
 
-The actual metric catalog, score formula, source weighting, ranking-category seed data, tie policy, correction/revision workflow, taxonomy, and analytics retention remain future decisions. Add them through reviewed migrations when requirements are known.
+The actual metric catalog, score formula, source weighting, official ranking-category taxonomy, tie policy, correction/revision workflow, and analytics retention remain future decisions. Add them through reviewed migrations when requirements are known.

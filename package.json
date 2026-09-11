@@ -4,7 +4,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:seed": "supabase db query --local --file supabase/seed.sql",
+    "db:seed:linked": "node scripts/run-linked-demo-seed.mjs",
+    "db:validate": "node scripts/validate-database.mjs --local",
+    "db:validate:linked": "node scripts/validate-database.mjs --linked"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.1",

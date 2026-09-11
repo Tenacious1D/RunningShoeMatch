@@ -11,7 +11,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { cn } from "@/lib/utils";
-import { placeholderGuides, placeholderShoes, rankingCategories } from "@/lib/placeholder-data";
+import { getActiveRankingCategories } from "@/lib/data/rankings";
+import { getActiveShoes } from "@/lib/data/shoes";
+import { placeholderGuides } from "@/lib/placeholder-data";
 
 export const metadata: Metadata = {
   title: "Running Shoe Match | Find the Right Running Shoe",
@@ -37,7 +39,12 @@ const steps = [
   },
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featuredShoes, rankingCategories] = await Promise.all([
+    getActiveShoes(3),
+    getActiveRankingCategories(),
+  ]);
+
   return (
     <main>
       <section className="overflow-hidden border-b border-border bg-card">
@@ -116,26 +123,43 @@ export default function HomePage() {
       <section className="section-space border-y border-border bg-card">
         <Container size="wide">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeading eyebrow="Explore running shoe rankings" title="Start with the job the shoe needs to do" description="Category pages will use a consistent, versioned ranking format once the data and methodology are ready." />
+            <SectionHeading eyebrow="Explore running shoe rankings" title="Start with the job the shoe needs to do" description="Each active category uses a consistent page backed by the newest published ranking snapshot." />
             <Link href="/rankings" className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}>View all rankings</Link>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {rankingCategories.map((category) => (
-              <RankingCategoryCard key={category.slug} title={category.title} description={category.description} surface={category.surface} href={`/rankings/${category.slug}`} />
-            ))}
-          </div>
+          {rankingCategories.length ? (
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {rankingCategories.map((category) => (
+                <RankingCategoryCard
+                  key={category.id}
+                  title={category.name}
+                  description={category.description}
+                  isDemo={process.env.NODE_ENV === "development" && category.isDemo}
+                  href={`/rankings/${category.slug}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-10 rounded-lg border border-dashed border-border bg-background p-8 text-center text-sm text-muted-foreground">No active ranking categories are published yet.</p>
+          )}
         </Container>
       </section>
 
       <section className="section-space">
         <Container size="wide">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <SectionHeading eyebrow="Browse shoes" title="A database designed for useful comparison" description="Shoe profiles will combine normalized specifications, category context, and retailer options in one reusable format." />
+            <SectionHeading eyebrow="Browse shoes" title="A database designed for useful comparison" description="Shoe profiles combine available specifications, metric context, and retailer options in one reusable format." />
             <Link href="/shoes" className={cn(buttonVariants({ variant: "outline" }), "shrink-0")}>Browse all shoes</Link>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {placeholderShoes.slice(0, 3).map((shoe) => <ShoeCard key={shoe.name} {...shoe} />)}
-          </div>
+          {featuredShoes.length ? (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {featuredShoes.map((shoe) => <ShoeCard key={shoe.id} shoe={shoe} />)}
+            </div>
+          ) : (
+            <div className="mt-10 rounded-lg border border-dashed border-border bg-surface p-8 text-center">
+              <p className="font-bold">No active shoe profiles are published yet.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Visit the shoe database after development data has been seeded.</p>
+            </div>
+          )}
         </Container>
       </section>
 
