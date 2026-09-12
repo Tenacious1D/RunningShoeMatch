@@ -29,10 +29,10 @@ values
   ('14000000-0000-0000-0000-000000000011', 'Admin Public Brand', 'admin-public-brand'),
   ('14000000-0000-0000-0000-000000000012', 'Admin Private Brand', 'admin-private-brand');
 
-insert into public.shoes (id, brand_id, model_name, slug, status, is_public)
+insert into public.shoes (id, brand_id, model_name, slug, status, spec_verification_status, spec_verified_at, is_public)
 values
-  ('14000000-0000-0000-0000-000000000021', '14000000-0000-0000-0000-000000000011', 'Admin Public Shoe', 'admin-public-shoe', 'active', true),
-  ('14000000-0000-0000-0000-000000000022', '14000000-0000-0000-0000-000000000012', 'Admin Private Shoe', 'admin-private-shoe', 'upcoming', false);
+  ('14000000-0000-0000-0000-000000000021', '14000000-0000-0000-0000-000000000011', 'Admin Public Shoe', 'admin-public-shoe', 'active', 'source_checked', '2026-09-01', true),
+  ('14000000-0000-0000-0000-000000000022', '14000000-0000-0000-0000-000000000012', 'Admin Private Shoe', 'admin-private-shoe', 'upcoming', 'unverified', null, false);
 
 insert into public.ranking_runs (id, name, effective_date, methodology_version)
 values ('14000000-0000-0000-0000-000000000031', 'Admin Draft Run', '2026-12-01', 'admin-test-v1');

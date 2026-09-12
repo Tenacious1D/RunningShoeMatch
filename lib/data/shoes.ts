@@ -32,9 +32,15 @@ type ShoeRow = {
   specs: ShoeSpecifications;
   primary_surface: string | null;
   support_category: string | null;
+  manufacturer_support_label: string | null;
   weight_oz: number | null;
+  weight_value: number | null;
+  weight_unit: "g" | "oz" | null;
   weight_reference: string | null;
+  weight_reference_size: string | null;
+  weight_reference_category: "men" | "women" | "unisex" | "not_stated" | null;
   heel_to_toe_drop_mm: number | null;
+  general_stack_height_mm: number | null;
   heel_stack_height_mm: number | null;
   forefoot_stack_height_mm: number | null;
   available_widths: string[];
@@ -81,9 +87,15 @@ const shoeSelection = `
   specs,
   primary_surface,
   support_category,
+  manufacturer_support_label,
   weight_oz,
+  weight_value,
+  weight_unit,
   weight_reference,
+  weight_reference_size,
+  weight_reference_category,
   heel_to_toe_drop_mm,
+  general_stack_height_mm,
   heel_stack_height_mm,
   forefoot_stack_height_mm,
   available_widths,
@@ -100,9 +112,20 @@ function toShoeSummary(row: ShoeRow): ShoeSummary {
 
   if (row.primary_surface !== null) specs.primary_surface = row.primary_surface;
   if (row.support_category !== null) specs.support_category = row.support_category;
-  if (row.weight_oz !== null) specs.weight_oz = row.weight_oz;
-  if (row.weight_reference !== null) specs.weight_reference = row.weight_reference;
+  if (row.manufacturer_support_label !== null) specs.manufacturer_support_label = row.manufacturer_support_label;
+  if (row.weight_value !== null && row.weight_unit !== null) {
+    delete specs.weight_oz;
+    delete specs.weight_g;
+    specs.weight_value = row.weight_value;
+    specs.weight_unit = row.weight_unit;
+  } else if (row.weight_oz !== null) {
+    specs.weight_oz = row.weight_oz;
+  }
+  if (row.weight_reference_size !== null) specs.weight_reference_size = row.weight_reference_size;
+  if (row.weight_reference_category !== null) specs.weight_reference_category = row.weight_reference_category;
+  if (row.weight_reference_size === null && row.weight_reference !== null) specs.weight_reference = row.weight_reference;
   if (row.heel_to_toe_drop_mm !== null) specs.heel_to_toe_drop_mm = row.heel_to_toe_drop_mm;
+  if (row.general_stack_height_mm !== null) specs.general_stack_height_mm = row.general_stack_height_mm;
   if (row.heel_stack_height_mm !== null) specs.heel_stack_height_mm = row.heel_stack_height_mm;
   if (row.forefoot_stack_height_mm !== null) specs.forefoot_stack_height_mm = row.forefoot_stack_height_mm;
   if (row.available_widths.length > 0) specs.available_widths = row.available_widths;

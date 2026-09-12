@@ -28,9 +28,15 @@ type ShoeRow = {
   specs: Record<string, unknown>;
   primary_surface: string | null;
   support_category: string | null;
+  manufacturer_support_label: string | null;
   weight_oz: number | string | null;
+  weight_value: number | string | null;
+  weight_unit: string | null;
   weight_reference: string | null;
+  weight_reference_size: string | null;
+  weight_reference_category: string | null;
   heel_to_toe_drop_mm: number | string | null;
+  general_stack_height_mm: number | string | null;
   heel_stack_height_mm: number | string | null;
   forefoot_stack_height_mm: number | string | null;
   available_widths: string[];
@@ -40,10 +46,12 @@ type ShoeRow = {
   spec_verification_status: string;
   spec_notes: string | null;
 };
-type ShoePayload = Omit<ShoeRow, "id" | "msrp" | "weight_oz" | "heel_to_toe_drop_mm" | "heel_stack_height_mm" | "forefoot_stack_height_mm"> & {
+type ShoePayload = Omit<ShoeRow, "id" | "msrp" | "weight_oz" | "weight_value" | "heel_to_toe_drop_mm" | "general_stack_height_mm" | "heel_stack_height_mm" | "forefoot_stack_height_mm"> & {
   msrp: number | null;
   weight_oz: number | null;
+  weight_value: number | null;
   heel_to_toe_drop_mm: number | null;
+  general_stack_height_mm: number | null;
   heel_stack_height_mm: number | null;
   forefoot_stack_height_mm: number | null;
 };
@@ -55,7 +63,13 @@ function numberOrNull(value: number | string | null) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function buildPayload(shoe: NormalizedShoeImport, brandId: string, supplementalSpecs: Record<string, unknown>): ShoePayload {
+function buildPayload(
+  shoe: NormalizedShoeImport,
+  brandId: string,
+  supplementalSpecs: Record<string, unknown>,
+  legacyWeightOz: number | null,
+  legacyWeightReference: string | null,
+): ShoePayload {
   return {
     brand_id: brandId,
     model_name: shoe.modelName,
@@ -74,9 +88,15 @@ function buildPayload(shoe: NormalizedShoeImport, brandId: string, supplementalS
     specs: supplementalSpecs,
     primary_surface: shoe.primarySurface,
     support_category: shoe.supportCategory,
-    weight_oz: shoe.weightOz,
-    weight_reference: shoe.weightReference,
+    manufacturer_support_label: shoe.manufacturerSupportLabel,
+    weight_oz: legacyWeightOz,
+    weight_value: shoe.weightValue,
+    weight_unit: shoe.weightUnit,
+    weight_reference: legacyWeightReference,
+    weight_reference_size: shoe.weightReferenceSize,
+    weight_reference_category: shoe.weightReferenceCategory,
     heel_to_toe_drop_mm: shoe.heelToToeDropMm,
+    general_stack_height_mm: shoe.generalStackHeightMm,
     heel_stack_height_mm: shoe.heelStackHeightMm,
     forefoot_stack_height_mm: shoe.forefootStackHeightMm,
     available_widths: shoe.availableWidths,
@@ -105,9 +125,15 @@ function shoeMatches(existing: ShoeRow, desired: ShoePayload) {
     stableJson(existing.specs) === stableJson(desired.specs) &&
     existing.primary_surface === desired.primary_surface &&
     existing.support_category === desired.support_category &&
+    existing.manufacturer_support_label === desired.manufacturer_support_label &&
     numberOrNull(existing.weight_oz) === desired.weight_oz &&
+    numberOrNull(existing.weight_value) === desired.weight_value &&
+    existing.weight_unit === desired.weight_unit &&
     existing.weight_reference === desired.weight_reference &&
+    existing.weight_reference_size === desired.weight_reference_size &&
+    existing.weight_reference_category === desired.weight_reference_category &&
     numberOrNull(existing.heel_to_toe_drop_mm) === desired.heel_to_toe_drop_mm &&
+    numberOrNull(existing.general_stack_height_mm) === desired.general_stack_height_mm &&
     numberOrNull(existing.heel_stack_height_mm) === desired.heel_stack_height_mm &&
     numberOrNull(existing.forefoot_stack_height_mm) === desired.forefoot_stack_height_mm &&
     stableJson(existing.available_widths) === stableJson(desired.available_widths) &&
@@ -136,7 +162,7 @@ async function loadShoes(client: SupabaseClient, slugs: string[]): Promise<Map<s
   for (const slugChunk of chunks(slugs)) {
     const { data, error } = await client
       .from("shoes")
-      .select("id, brand_id, model_name, slug, model_version, model_year, status, gender, is_public, msrp, currency, release_date, short_description, full_description, primary_image_url, specs, primary_surface, support_category, weight_oz, weight_reference, heel_to_toe_drop_mm, heel_stack_height_mm, forefoot_stack_height_mm, available_widths, spec_source_name, spec_source_url, spec_verified_at, spec_verification_status, spec_notes")
+      .select("id, brand_id, model_name, slug, model_version, model_year, status, gender, is_public, msrp, currency, release_date, short_description, full_description, primary_image_url, specs, primary_surface, support_category, manufacturer_support_label, weight_oz, weight_value, weight_unit, weight_reference, weight_reference_size, weight_reference_category, heel_to_toe_drop_mm, general_stack_height_mm, heel_stack_height_mm, forefoot_stack_height_mm, available_widths, spec_source_name, spec_source_url, spec_verified_at, spec_verification_status, spec_notes")
       .in("slug", slugChunk);
     if (error) throw new Error(`Unable to load existing shoes: ${error.message}`);
     rows.push(...(data as ShoeRow[]));
@@ -262,7 +288,13 @@ async function run() {
       const brand = brandsByName.get(shoe.brand.toLowerCase());
       const brandId = brand?.id ?? `dry-run:${shoe.brandSlug}`;
       const existing = existingShoes.get(shoe.slug);
-      const payload = buildPayload(shoe, brandId, existing?.specs ?? {});
+      const payload = buildPayload(
+        shoe,
+        brandId,
+        existing?.specs ?? {},
+        numberOrNull(existing?.weight_oz ?? null),
+        existing?.weight_reference ?? null,
+      );
       if (!existing) changes.push({ kind: "added", line: shoe.sourceLine, payload });
       else if (shoeMatches(existing, payload)) report.skipped += 1;
       else changes.push({ kind: "updated", line: shoe.sourceLine, payload });

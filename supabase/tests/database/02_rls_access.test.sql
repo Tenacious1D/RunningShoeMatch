@@ -13,10 +13,10 @@ values
   ('00000000-0000-0000-0000-000000000001', 'Public Brand', 'public-brand'),
   ('00000000-0000-0000-0000-000000000002', 'Private Brand', 'private-brand');
 
-insert into public.shoes (id, brand_id, model_name, slug, status, is_public)
+insert into public.shoes (id, brand_id, model_name, slug, status, spec_verification_status, spec_verified_at, is_public)
 values
-  ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', 'Public Shoe', 'public-shoe', 'active', true),
-  ('00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'Private Shoe', 'private-shoe', 'active', false);
+  ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', 'Public Shoe', 'public-shoe', 'active', 'source_checked', '2026-09-01', true),
+  ('00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', 'Private Shoe', 'private-shoe', 'active', 'unverified', null, false);
 
 insert into public.retailers (id, name, slug, homepage_url, active)
 values
@@ -50,11 +50,11 @@ update public.ranking_runs
 set status = 'published', published_at = now()
 where id = '00000000-0000-0000-0000-000000000051';
 
-insert into public.shoe_metrics (id, shoe_id, metric_key, value, normalized_value, data_source, effective_date, metric_version, is_public)
+insert into public.shoe_metrics (id, shoe_id, metric_key, value, normalized_value, data_source, effective_date, metric_version, verification_status, is_public)
 values
-  ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000011', 'cushioning', 8.5, 85, 'editorial', '2026-09-01', 'v1', true),
-  ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000011', 'stability', 7.5, 75, 'editorial', '2026-09-01', 'v1', false),
-  ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000012', 'cushioning', 8, 80, 'editorial', '2026-09-01', 'v1', true);
+  ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000011', 'cushioning', 8.5, 85, 'editorial', '2026-09-01', 'v1', 'source_checked', true),
+  ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000011', 'stability', 7.5, 75, 'editorial', '2026-09-01', 'v1', 'unverified', false),
+  ('00000000-0000-0000-0000-000000000073', '00000000-0000-0000-0000-000000000012', 'cushioning', 8, 80, 'editorial', '2026-09-01', 'v1', 'source_checked', true);
 
 set local role anon;
 select is((select count(*) from public.brands where id between '00000000-0000-0000-0000-000000000001' and '00000000-0000-0000-0000-000000000002'), 1::bigint, 'anon sees brands with public shoes only');

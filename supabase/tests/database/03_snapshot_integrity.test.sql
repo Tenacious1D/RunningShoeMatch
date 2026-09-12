@@ -11,8 +11,8 @@ select plan(8);
 insert into public.brands (id, name, slug)
 values ('10000000-0000-0000-0000-000000000001', 'Integrity Brand', 'integrity-brand');
 
-insert into public.shoes (id, brand_id, model_name, slug, status, is_public)
-values ('10000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000001', 'Integrity Shoe', 'integrity-shoe', 'active', true);
+insert into public.shoes (id, brand_id, model_name, slug, status, spec_verification_status, spec_verified_at, is_public)
+values ('10000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000001', 'Integrity Shoe', 'integrity-shoe', 'active', 'source_checked', '2026-09-01', true);
 
 insert into public.retailers (id, name, slug, homepage_url, active)
 values ('10000000-0000-0000-0000-000000000021', 'Integrity Retailer', 'integrity-retailer', 'https://integrity.example', true);
@@ -75,8 +75,8 @@ select throws_ok(
   'published ranking results cannot be deleted'
 );
 
-insert into public.shoe_metrics (id, shoe_id, metric_key, value, data_source, effective_date, metric_version, is_public)
-values ('10000000-0000-0000-0000-000000000071', '10000000-0000-0000-0000-000000000011', 'durability', 8, 'editorial', '2026-09-01', 'v1', true);
+insert into public.shoe_metrics (id, shoe_id, metric_key, value, data_source, effective_date, metric_version, verification_status, is_public)
+values ('10000000-0000-0000-0000-000000000071', '10000000-0000-0000-0000-000000000011', 'durability', 8, 'editorial', '2026-09-01', 'v1', 'source_checked', true);
 
 select throws_ok(
   $$update public.shoe_metrics set value = 9 where id = '10000000-0000-0000-0000-000000000071'$$,

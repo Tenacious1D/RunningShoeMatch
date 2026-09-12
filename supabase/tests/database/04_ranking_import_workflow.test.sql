@@ -16,10 +16,10 @@ select ok(not has_function_privilege('anon', 'public.publish_ranking_run(uuid)',
 insert into public.brands (id, name, slug)
 values ('12000000-0000-0000-0000-000000000001', 'Phase Twelve Brand', 'phase-twelve-brand');
 
-insert into public.shoes (id, brand_id, model_name, slug, status, is_public)
+insert into public.shoes (id, brand_id, model_name, slug, status, spec_verification_status, spec_verified_at, is_public)
 values
-  ('12000000-0000-0000-0000-000000000011', '12000000-0000-0000-0000-000000000001', 'Phase Twelve One', 'phase-twelve-one', 'active', true),
-  ('12000000-0000-0000-0000-000000000012', '12000000-0000-0000-0000-000000000001', 'Phase Twelve Two', 'phase-twelve-two', 'active', true);
+  ('12000000-0000-0000-0000-000000000011', '12000000-0000-0000-0000-000000000001', 'Phase Twelve One', 'phase-twelve-one', 'active', 'source_checked', '2026-09-01', true),
+  ('12000000-0000-0000-0000-000000000012', '12000000-0000-0000-0000-000000000001', 'Phase Twelve Two', 'phase-twelve-two', 'active', 'source_checked', '2026-09-01', true);
 
 insert into public.ranking_categories (id, name, slug, active)
 values ('12000000-0000-0000-0000-000000000021', 'Phase Twelve Category', 'phase-twelve-category', true);

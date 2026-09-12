@@ -86,9 +86,13 @@ with checks as (
       where (
         primary_surface is not null
         or support_category is not null
+        or manufacturer_support_label is not null
         or weight_oz is not null
+        or weight_value is not null
+        or weight_unit is not null
         or weight_reference is not null
         or heel_to_toe_drop_mm is not null
+        or general_stack_height_mm is not null
         or heel_stack_height_mm is not null
         or forefoot_stack_height_mm is not null
         or cardinality(available_widths) > 0
@@ -124,12 +128,11 @@ with checks as (
 
   select
     9,
-    'Use-case metric values stay within the 0-100 suitability scale',
+    'All Metric Vocabulary Version 1 scores stay within 0-100',
     (
       select count(*)
       from public.shoe_metrics
-      where metric_kind = 'use_case'
-        and value not between 0 and 100
+      where value not between 0 and 100
     )
 
   union all
@@ -143,6 +146,71 @@ with checks as (
       where is_public
         and spec_verification_status in ('unverified', 'development_demo')
         and not (metadata @> '{"development_demo": true}'::jsonb)
+    )
+
+  union all
+
+  select
+    11,
+    'Surface and support values use the approved Version 1 vocabulary',
+    (
+      select count(*)
+      from public.shoes
+      where (primary_surface is not null and primary_surface not in ('road', 'trail', 'track', 'hybrid'))
+        or (support_category is not null and support_category not in ('neutral', 'stability', 'motion_control'))
+    )
+
+  union all
+
+  select
+    12,
+    'Listed weights preserve their unit and explicit reference',
+    (
+      select count(*)
+      from public.shoes
+      where (
+        weight_oz is not null
+        and (weight_reference_size is null or weight_reference_category is null)
+      )
+        or ((weight_value is null) <> (weight_unit is null))
+        or (
+          weight_value is not null
+          and (
+            weight_value <= 0
+            or weight_unit not in ('g', 'oz')
+            or weight_reference_size is null
+            or weight_reference_category is null
+          )
+        )
+    )
+
+  union all
+
+  select
+    13,
+    'Metric keys match their approved Version 1 kind',
+    (
+      select count(*)
+      from public.shoe_metrics
+      where not (
+        metric_kind = 'evaluative'
+        and metric_key in ('cushioning', 'stability', 'responsiveness', 'flexibility', 'durability', 'comfort', 'ground_feel', 'energy_return', 'value')
+      )
+        and not (
+          metric_kind = 'use_case'
+          and metric_key in ('daily_training', 'long_run', 'speed_workout', 'racing', 'walking', 'beginner', 'heavier_runner')
+        )
+    )
+
+  union all
+
+  select
+    14,
+    'Metric Vocabulary Version 1 rows declare the canonical score unit',
+    (
+      select count(*)
+      from public.shoe_metrics
+      where unit is distinct from 'score_0_100'
     )
 )
 select check_name, issue_count

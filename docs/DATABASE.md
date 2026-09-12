@@ -283,13 +283,18 @@ Before applying to the hosted project, authenticate and link the CLI, review the
 
 ## Deferred decisions
 
-The actual metric catalog, score formula, source weighting, official ranking-category taxonomy, tie policy, correction/revision workflow, and analytics retention remain future decisions. Add them through reviewed migrations when requirements are known.
+Ranking formulas, quiz/match weights, source weighting, official ranking-category taxonomy, tie policy, correction/revision workflow, and analytics retention remain future decisions. Add them through reviewed migrations when requirements are known.
 ## Real shoe attribute model
 
 Phase A separates three data classes without changing ranking or future matching semantics:
 
-- Common objective specifications are typed, queryable columns on `shoes`: surface/support classifications, listed weight with sample reference, drop, heel and forefoot stack, and available widths. MSRP and release date were already relational. `spec_source_*` and `spec_verification_*` fields record provenance and review state for this specification set.
+- Common objective specifications are typed, queryable columns on `shoes`: surface and canonical support classifications, the manufacturer's support label, unit-aware listed weight with its exact sample reference, drop, general/heel/forefoot stack, and available widths. MSRP and release date were already relational. `spec_source_*` and `spec_verification_*` fields record provenance and review state for this specification set.
+- `weight_value` and `weight_unit` preserve the manufacturer's original `g` or `oz` measurement. `weight_reference_size` and `weight_reference_category` preserve its context. The legacy `weight_oz` and `weight_reference` columns remain in place for historical compatibility, but the current importer never populates or converts into them.
+- `manufacturer_support_label` preserves wording such as `Balanced` or `Structured`. It has no trigger, mapping, or importer rule that assigns `support_category`; a human reviewer owns the canonical classification.
+- `general_stack_height_mm` stores a single published stack value only when the source does not identify heel and forefoot separately. It never fills either specific stack column.
 - `shoes.specs` remains a JSONB object only for uncommon supplemental manufacturer facts. The CSV importer does not accept arbitrary JSON, and it preserves existing supplemental JSON during catalog updates.
 - Evaluative and use-case observations remain versioned rows in `shoe_metrics`. `metric_kind` distinguishes `evaluative` from `use_case`; `source_type` and `verification_status` make provenance workflow queryable. Objective specifications do not belong in this table.
 
-The proposed metric dictionary and missing-value rules are documented in `docs/METRICS.md`. Ranking scores remain in `ranking_results.score`; future personalized match scores remain matching-engine outputs. Neither is a shoe metric.
+The database constraint `shoe_metrics_public_requires_verification` permits unverified internal/draft observations but rejects `is_public = true` while `verification_status = unverified`. Demo observations use the explicit `development_demo` source and verification states; missing verification is never inferred.
+
+The approved Metric Vocabulary Version 1, score anchors, objective source rules, and missing-value policy are documented in `docs/METRICS.md`. Database constraints enforce the v1 key/kind pairs, universal 0-100 range, surface/support classifications, unit-aware weight completeness, explicit weight reference fields, and real-shoe publication state. Ranking scores remain in `ranking_results.score`; future personalized match scores remain matching-engine outputs. Neither is a shoe metric.

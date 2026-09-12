@@ -7,7 +7,7 @@ Real shoe data uses two spreadsheet-friendly CSV files:
 - `data/templates/shoes-import-template.csv`: one row per shoe for catalog facts and typed objective specifications.
 - `data/templates/shoe-metrics-import-template.csv`: one row per versioned evaluative or use-case observation.
 
-This split keeps common facts queryable without adding a column for every future evaluation. Read `docs/METRICS.md` before preparing pilot data; its starter vocabulary is still a proposal.
+This split keeps common facts queryable without adding a column for every future evaluation. `docs/METRICS.md` defines the frozen Metric Vocabulary Version 1 contract.
 
 ## Configure secure credentials
 
@@ -56,7 +56,7 @@ Both import commands require exactly one of `--dry-run` or `--apply`. Omitting b
 Keep this exact header order:
 
 ```text
-brand,model_name,slug,model_version,model_year,status,gender,is_public,msrp,currency,release_date,short_description,full_description,primary_image_url,spec_primary_surface,spec_support_category,spec_weight_oz,spec_weight_reference,spec_heel_to_toe_drop_mm,spec_heel_stack_height_mm,spec_forefoot_stack_height_mm,spec_available_widths,spec_source_name,spec_source_url,spec_verified_at,spec_verification_status,spec_notes
+brand,model_name,slug,model_version,model_year,status,gender,is_public,msrp,currency,release_date,short_description,full_description,primary_image_url,spec_primary_surface,spec_support_category,spec_manufacturer_support_label,spec_weight_value,spec_weight_unit,spec_weight_reference_size,spec_weight_reference_category,spec_heel_to_toe_drop_mm,spec_general_stack_height_mm,spec_heel_stack_height_mm,spec_forefoot_stack_height_mm,spec_available_widths,spec_source_name,spec_source_url,spec_verified_at,spec_verification_status,spec_notes
 ```
 
 ### Catalog columns
@@ -82,21 +82,31 @@ brand,model_name,slug,model_version,model_year,status,gender,is_public,msrp,curr
 
 | Column | Required | Format / database destination |
 | --- | --- | --- |
-| `spec_primary_surface` | No | Normalized catalog key → `shoes.primary_surface` |
-| `spec_support_category` | No | Normalized catalog key → `shoes.support_category` |
-| `spec_weight_oz` | No | 0.1–40 → `shoes.weight_oz` |
-| `spec_weight_reference` | No | Exact sample context, e.g. `Men's US 9` |
+| `spec_primary_surface` | No | `road`, `trail`, `track`, or `hybrid` → `shoes.primary_surface` |
+| `spec_support_category` | No | `neutral`, `stability`, or `motion_control`; never infer this automatically from marketing copy |
+| `spec_manufacturer_support_label` | No | Manufacturer wording preserved as written, such as `Balanced` or `Structured`; it never populates canonical support |
+| `spec_weight_value` | Required with unit | Positive manufacturer-listed numeric value; no unit conversion |
+| `spec_weight_unit` | Required with value | `g` or `oz`, matching the manufacturer's original measurement |
+| `spec_weight_reference_size` | Required with weight | Preserve the stated size, e.g. `US 9`; do not convert |
+| `spec_weight_reference_category` | Required with weight | `men`, `women`, `unisex`, or `not_stated` |
 | `spec_heel_to_toe_drop_mm` | No | -10–40 millimetres |
+| `spec_general_stack_height_mm` | No | 1–100 millimetres when the source publishes one stack value without identifying heel and forefoot |
 | `spec_heel_stack_height_mm` | No | 1–100 millimetres |
 | `spec_forefoot_stack_height_mm` | No | 1–100 millimetres |
-| `spec_available_widths` | No | Pipe-separated normalized keys, e.g. `standard|wide|extra_wide` |
+| `spec_available_widths` | No | Pipe-separated manufacturer codes/labels, e.g. `B|D|2E|4E` |
 | `spec_source_name` | Required when any objective spec is present | Source name, usually the manufacturer/product specification page |
 | `spec_source_url` | No | Complete source URL when one exists |
 | `spec_verified_at` | Required unless status is `unverified` | Date checked, `YYYY-MM-DD` |
 | `spec_verification_status` | Yes | `unverified`, `source_checked`, `cross_checked`, or `development_demo` |
 | `spec_notes` | No | Source differences, sample-size caveats, or verification notes |
 
-Objective fields are typed columns because they are common filters and comparison facts. `shoes.specs` remains available for less-common supplemental facts but is not populated from arbitrary CSV JSON. The importer preserves existing supplemental JSON when updating a shoe.
+Objective fields are typed columns because they are common filters and comparison facts. Manufacturer-published weight, drop, stack, MSRP, release date, and widths take precedence in v1. Independent measurements must later be imported separately rather than replacing these fields. `shoes.specs` remains available for less-common supplemental facts but is not populated from arbitrary CSV JSON. The importer preserves existing supplemental JSON when updating a shoe.
+
+Prefer manufacturer-listed men's US size 9 weight when available. For women-only, unisex, or differently referenced listings, preserve the actual stated value, unit, size, and category. Do not mathematically convert weight. A future comparison service may derive normalized grams or ounces at read/calculation time, but it must leave the stored source measurement unchanged. The legacy `weight_oz` and `weight_reference` database columns remain readable and are preserved during updates; the current CSV contract does not populate them.
+
+`spec_manufacturer_support_label` and `spec_support_category` are independent. Entering a manufacturer label does not assign canonical support. A human reviewer must enter `neutral`, `stability`, or `motion_control` explicitly when evidence and project policy support it.
+
+A general stack value belongs only in `spec_general_stack_height_mm`. Do not copy it into heel or forefoot fields. Leave those cells blank unless the source explicitly identifies them. One provenance record for the objective specification set is sufficient for v1.
 
 A public shoe row is rejected by the importer when specifications are `unverified` or `development_demo`. Publication remains separate from status: `active` does not automatically mean public.
 
@@ -105,28 +115,29 @@ A public shoe row is rejected by the importer when specifications are `unverifie
 Keep this exact header order:
 
 ```text
-shoe_slug,metric_key,metric_kind,value,normalized_value,unit,source_type,data_source,source_reference,effective_date,metric_version,confidence,verification_status,notes,is_public
+shoe_slug,metric_key,metric_kind,value,unit,source_type,data_source,source_reference,effective_date,metric_version,confidence,verification_status,notes,is_public
 ```
 
 | Column | Required | Format / behavior |
 | --- | --- | --- |
 | `shoe_slug` | Yes | Existing shoe slug |
-| `metric_key` | Yes | Stable lowercase underscore key; see the proposed vocabulary |
+| `metric_key` | Yes | Exact approved Metric Vocabulary Version 1 key from `docs/METRICS.md` |
 | `metric_kind` | Yes | `evaluative` or `use_case`; never an objective spec |
-| `value` | Yes | Numeric source/methodology value; use-case values must be 0–100 |
-| `normalized_value` | No | 0–100 conversion when retaining a different raw source scale |
-| `unit` | No | Scale/unit such as `score_0_100` |
+| `value` | Yes | Canonical numeric score from 0–100 for both metric kinds |
+| `unit` | Yes | Must be `score_0_100` |
 | `source_type` | Yes | `manufacturer`, `review`, `lab_test`, `editorial_assessment`, `derived_methodology`, or `development_demo` |
 | `data_source` | Yes | Human-readable source or methodology name |
 | `source_reference` | Required for any reviewed status | Durable URL, report ID, or methodology document reference |
 | `effective_date` | Yes | Valid `YYYY-MM-DD` |
-| `metric_version` | Yes | Definition/method version, such as `proposal-v1` |
-| `confidence` | No | 0–1; leave empty until a confidence rubric is approved |
+| `metric_version` | Yes | Must begin `metric-v1:`, e.g. `metric-v1:editorial-v1` |
+| `confidence` | No | 0–1; leave empty during the pilot unless a rubric is approved later |
 | `verification_status` | Yes | `unverified`, `source_checked`, `cross_checked`, `methodology_reviewed`, or `development_demo` |
 | `notes` | No | Interpretation/test-context notes |
 | `is_public` | Yes | Boolean; use `false` during pilot review |
 
 Use-case metrics accept only editorial, derived-methodology, or development source types. Public metrics must be source checked, cross checked, or methodology reviewed. The importer rejects public unverified/demo metrics.
+
+The importer never generates metric rows for empty spreadsheet cells. Omit an unassessed metric entirely. An explicit `0` remains a real assessed zero.
 
 Metric idempotency uses `(shoe_slug, metric_key, effective_date, metric_version, data_source)`, matching the database uniqueness rule. Public observations are immutable. Correct or supersede them with a new date or method version; do not rewrite history.
 
@@ -137,8 +148,8 @@ Metric idempotency uses `(shoe_slug, metric_key, effective_date, metric_version,
 - Quote cells containing commas, quotation marks, or line breaks; spreadsheet export normally does this.
 - Format all dates as `YYYY-MM-DD` to avoid locale ambiguity.
 - Use decimal points for numeric values.
-- Separate widths with `|`, not commas.
-- Empty optional shoe cells intentionally clear that typed field on update. Review update counts carefully.
+- Separate manufacturer width codes/labels with `|`, not commas. Compact codes such as `b`, `d`, `2e`, and `4e` normalize to uppercase.
+- Empty optional shoe cells intentionally clear current typed fields on update. Legacy `weight_oz` and `weight_reference` values are carried forward because they are absent from the new CSV contract.
 - A missing metric is represented by no metric row, never a zero placeholder.
 - Do not include formulas; export their calculated values.
 - Do not include retailer or affiliate URLs. Those belong in `shoe_retailer_links`.
@@ -151,12 +162,12 @@ Every attempt writes a Markdown report under `data/imports/reports/` with added,
 
 ## Importer tests and fictional fixture
 
-`data/imports/demo-shoes-import.csv` contains three fictional, non-public shoes solely for importer testing.
+`data/imports/demo-shoes-import.csv` contains three fictional, non-public shoes solely for importer testing. `data/imports/demo-shoe-metrics-import.csv` contains two fictional, non-public Metric Vocabulary Version 1 observations for a shoe created by the development seed.
 
 ```powershell
 npm run test:import
 npm run import:shoes -- data/imports/demo-shoes-import.csv --dry-run
+npm run import:metrics -- data/imports/demo-shoe-metrics-import.csv --dry-run
 ```
 
-No real shoe specifications or arbitrary scores are included in the repository.
-
+The repository includes a non-public 12-shoe objective pilot under `data/pilot/`. It has not been imported or published. No evaluative scores, use-case scores, ranking weights, or real ranking results are included.

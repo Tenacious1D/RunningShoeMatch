@@ -19,9 +19,13 @@ export const SHOE_IMPORT_COLUMNS = [
   "primary_image_url",
   "spec_primary_surface",
   "spec_support_category",
-  "spec_weight_oz",
-  "spec_weight_reference",
+  "spec_manufacturer_support_label",
+  "spec_weight_value",
+  "spec_weight_unit",
+  "spec_weight_reference_size",
+  "spec_weight_reference_category",
   "spec_heel_to_toe_drop_mm",
+  "spec_general_stack_height_mm",
   "spec_heel_stack_height_mm",
   "spec_forefoot_stack_height_mm",
   "spec_available_widths",
@@ -49,10 +53,11 @@ function emptyToUndefined(value: unknown) {
   return normalized === "" ? undefined : normalized;
 }
 
-function optionalNumber(options: { min?: number; max?: number; integer?: boolean } = {}) {
+function optionalNumber(options: { min?: number; max?: number; integer?: boolean; positive?: boolean } = {}) {
   let schema = z.number();
 
   if (options.integer) schema = schema.int();
+  if (options.positive) schema = schema.positive();
   if (options.min !== undefined) schema = schema.min(options.min);
   if (options.max !== undefined) schema = schema.max(options.max);
 
@@ -79,6 +84,13 @@ const booleanValue = z.preprocess((value) => {
   if (["false", "no", "0"].includes(normalized)) return false;
   return value;
 }, z.boolean());
+const controlledKey = <T extends readonly [string, ...string[]]>(values: T) => z.preprocess(
+  (value) => {
+    const normalized = emptyToUndefined(value);
+    return typeof normalized === "string" ? normalized.toLowerCase().replace(/[\s-]+/g, "_") : normalized;
+  },
+  z.enum(values).optional(),
+);
 
 const rawShoeSchema = z.object({
   brand: requiredText,
@@ -95,11 +107,21 @@ const rawShoeSchema = z.object({
   short_description: optionalText,
   full_description: optionalText,
   primary_image_url: optionalHttpUrl,
-  spec_primary_surface: optionalText,
-  spec_support_category: optionalText,
-  spec_weight_oz: optionalNumber({ min: 0.1, max: 40 }),
-  spec_weight_reference: optionalText,
+  spec_primary_surface: controlledKey(["road", "trail", "track", "hybrid"]),
+  spec_support_category: controlledKey(["neutral", "stability", "motion_control"]),
+  spec_manufacturer_support_label: optionalText,
+  spec_weight_value: optionalNumber({ positive: true }),
+  spec_weight_unit: controlledKey(["g", "oz"]),
+  spec_weight_reference_size: optionalText,
+  spec_weight_reference_category: z.preprocess(
+    (value) => {
+      const normalized = emptyToUndefined(value);
+      return typeof normalized === "string" ? normalized.toLowerCase().replace(/[\s-]+/g, "_") : normalized;
+    },
+    z.enum(["men", "women", "unisex", "not_stated"]).optional(),
+  ),
   spec_heel_to_toe_drop_mm: optionalNumber({ min: -10, max: 40 }),
+  spec_general_stack_height_mm: optionalNumber({ min: 1, max: 100 }),
   spec_heel_stack_height_mm: optionalNumber({ min: 1, max: 100 }),
   spec_forefoot_stack_height_mm: optionalNumber({ min: 1, max: 100 }),
   spec_available_widths: optionalText,
@@ -132,9 +154,13 @@ export type NormalizedShoeImport = {
   primaryImageUrl: string | null;
   primarySurface: string | null;
   supportCategory: string | null;
-  weightOz: number | null;
-  weightReference: string | null;
+  manufacturerSupportLabel: string | null;
+  weightValue: number | null;
+  weightUnit: "g" | "oz" | null;
+  weightReferenceSize: string | null;
+  weightReferenceCategory: "men" | "women" | "unisex" | "not_stated" | null;
   heelToToeDropMm: number | null;
+  generalStackHeightMm: number | null;
   heelStackHeightMm: number | null;
   forefootStackHeightMm: number | null;
   availableWidths: string[];
@@ -171,15 +197,45 @@ export function normalizeShoeRow(row: CsvRow): RowValidationResult<NormalizedSho
 
   const availableWidths = (result.data.spec_available_widths ?? "")
     .split("|")
-    .map((value) => value.trim().toLowerCase().replace(/[\s-]+/g, "_"))
+    .map((value) => normalizeWhitespace(value))
+    .map((value) => (/^(?:\d*[a-z]{1,2})$/i.test(value) ? value.toUpperCase() : value))
     .filter(Boolean);
 
-  if (availableWidths.some((value) => !/^[a-z0-9][a-z0-9_]*$/.test(value))) {
-    return { success: false, line: row.line, message: "spec_available_widths must use pipe-separated letters, numbers, or underscores" };
+  if (availableWidths.some((value) => value.includes("|"))) {
+    return { success: false, line: row.line, message: "spec_available_widths must use pipe-separated manufacturer codes or labels" };
   }
 
-  if (new Set(availableWidths).size !== availableWidths.length) {
+  if (new Set(availableWidths.map((value) => value.toLocaleLowerCase("en-US"))).size !== availableWidths.length) {
     return { success: false, line: row.line, message: "spec_available_widths contains a duplicate normalized width" };
+  }
+
+  const hasWeightReferenceSize = result.data.spec_weight_reference_size !== undefined;
+  const hasWeightReferenceCategory = result.data.spec_weight_reference_category !== undefined;
+  const hasWeightValue = result.data.spec_weight_value !== undefined;
+  const hasWeightUnit = result.data.spec_weight_unit !== undefined;
+
+  if (hasWeightValue !== hasWeightUnit) {
+    return {
+      success: false,
+      line: row.line,
+      message: "spec_weight_value and spec_weight_unit must be provided together",
+    };
+  }
+
+  if (hasWeightValue && (!hasWeightReferenceSize || !hasWeightReferenceCategory)) {
+    return {
+      success: false,
+      line: row.line,
+      message: "unit-aware weight requires spec_weight_reference_size and spec_weight_reference_category",
+    };
+  }
+
+  if (hasWeightReferenceSize !== hasWeightReferenceCategory) {
+    return {
+      success: false,
+      line: row.line,
+      message: "weight reference size and category must be provided together",
+    };
   }
 
   const hasObjectiveSpecifications = [
@@ -187,9 +243,13 @@ export function normalizeShoeRow(row: CsvRow): RowValidationResult<NormalizedSho
     result.data.release_date,
     result.data.spec_primary_surface,
     result.data.spec_support_category,
-    result.data.spec_weight_oz,
-    result.data.spec_weight_reference,
+    result.data.spec_manufacturer_support_label,
+    result.data.spec_weight_value,
+    result.data.spec_weight_unit,
+    result.data.spec_weight_reference_size,
+    result.data.spec_weight_reference_category,
     result.data.spec_heel_to_toe_drop_mm,
+    result.data.spec_general_stack_height_mm,
     result.data.spec_heel_stack_height_mm,
     result.data.spec_forefoot_stack_height_mm,
     ...availableWidths,
@@ -228,9 +288,15 @@ export function normalizeShoeRow(row: CsvRow): RowValidationResult<NormalizedSho
       primaryImageUrl: result.data.primary_image_url ?? null,
       primarySurface: result.data.spec_primary_surface ?? null,
       supportCategory: result.data.spec_support_category ?? null,
-      weightOz: result.data.spec_weight_oz ?? null,
-      weightReference: result.data.spec_weight_reference ?? null,
+      manufacturerSupportLabel: result.data.spec_manufacturer_support_label ?? null,
+      weightValue: result.data.spec_weight_value ?? null,
+      weightUnit: result.data.spec_weight_unit === "g" || result.data.spec_weight_unit === "oz"
+        ? result.data.spec_weight_unit
+        : null,
+      weightReferenceSize: result.data.spec_weight_reference_size ?? null,
+      weightReferenceCategory: result.data.spec_weight_reference_category ?? null,
       heelToToeDropMm: result.data.spec_heel_to_toe_drop_mm ?? null,
+      generalStackHeightMm: result.data.spec_general_stack_height_mm ?? null,
       heelStackHeightMm: result.data.spec_heel_stack_height_mm ?? null,
       forefootStackHeightMm: result.data.spec_forefoot_stack_height_mm ?? null,
       availableWidths,

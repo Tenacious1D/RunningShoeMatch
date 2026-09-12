@@ -1,100 +1,145 @@
-# Shoe Attribute and Metric Vocabulary
+# Metric Vocabulary Version 1
 
-> **Status: proposal for review.** The keys, scales, and definitions in this document are not approved production methodology. Review the decisions at the end of this document before importing real metrics. No quiz weights are defined here.
+**Status: approved and frozen for the pilot import.** This document defines the v1 shoe attribute and metric vocabulary. It does not define ranking weights, quiz questions, personalized match weights, or a recommendation formula.
 
-## Three distinct data classes
+## Data classes
 
-| Class | Meaning | Storage | Examples |
-| --- | --- | --- | --- |
-| Objective specification | A manufacturer/specification-style fact about the product | Typed columns on `shoes` for common facts; `shoes.specs` only for uncommon supplemental facts | listed weight, drop, heel/forefoot stack, MSRP, release date, widths |
-| Evaluative metric | A versioned observation or judgment from reviews, testing, or an RSM evaluation method | `shoe_metrics` with `metric_kind = evaluative` | cushioning, stability, responsiveness, durability |
-| Use-case score | A versioned derived/editorial suitability assessment | `shoe_metrics` with `metric_kind = use_case` | daily training suitability, long-run suitability |
+| Class | Meaning | Storage |
+| --- | --- | --- |
+| Objective specification | Manufacturer-published product fact | Typed columns on `shoes`; uncommon supplemental facts may remain in `shoes.specs` |
+| Evaluative metric | Versioned evaluation of a shoe characteristic | `shoe_metrics` with `metric_kind = evaluative` |
+| Use-case metric | Versioned editorial suitability score for a named use | `shoe_metrics` with `metric_kind = use_case` |
 
-`ranking_results.score` is a category ranking score. A future `ShoeMatchResult.matchScore` will be personalized to one runner. Neither belongs in `shoe_metrics`, and neither should be inferred from the proposal below.
+`ranking_results.score` is a general category ranking score. A future `ShoeMatchResult.matchScore` will be personalized to a runner. Neither is a shoe metric.
 
-## Objective specification vocabulary
+## Universal score interpretation
 
-These are current typed shoe fields, not `metric_key` values.
+All v1 evaluative and use-case metrics use a numeric 0–100 scale:
 
-| Field | Plain-English meaning | Type / unit | Accepted range or values | Is higher always better? | Missing-value handling |
-| --- | --- | --- | --- | --- | --- |
-| `msrp` | Manufacturer suggested retail price for the catalog record | Decimal money with `currency` | 0 or greater | No | `null` means unknown; never assume free |
-| `release_date` | Announced or actual release date | ISO date | Valid `YYYY-MM-DD` | Not applicable | `null` means unknown |
-| `primary_surface` | Main intended surface classification | Text key | Taxonomy to approve; e.g. `road`, `trail`, `track` | Not applicable | `null` means unclassified |
-| `support_category` | Manufacturer/catalog support classification | Text key | Taxonomy to approve; e.g. `neutral`, `stability` | No | `null` means unclassified, not neutral |
-| `weight_oz` | Listed weight of the referenced sample/variant | Decimal ounces | 0.1–40 | No; lighter is not universally better | `null` means unknown |
-| `weight_reference` | Exact sample context for listed weight | Text | Example format: `Men's US 9` | Not applicable | Required in practice whenever weight is supplied |
-| `heel_to_toe_drop_mm` | Listed heel-to-forefoot height difference | Decimal millimetres | -10–40 | No | `null` means unknown |
-| `heel_stack_height_mm` | Listed heel stack height | Decimal millimetres | 1–100 | No | `null` means unknown |
-| `forefoot_stack_height_mm` | Listed forefoot stack height | Decimal millimetres | 1–100 | No | `null` means unknown |
-| `available_widths` | Width options for this catalog record | Array of normalized text keys | Pipe-separated in CSV; taxonomy to approve | No | Empty array means not recorded, not standard-only |
+| Score | Interpretation |
+| --- | --- |
+| 0 | Extremely low or essentially absent |
+| 25 | Below average |
+| 50 | Average |
+| 75 | Clearly above average |
+| 100 | Exceptional or extreme relative to the running-shoe comparison universe |
 
-All typed objective specifications share a provenance block on the shoe: `spec_source_name`, optional `spec_source_url`, `spec_verified_at`, `spec_verification_status`, and `spec_notes`. If different facts require materially different sources, explain that in `spec_notes`; split-source provenance can be normalized later if the pilot demonstrates that it is common.
+These anchors describe position in the running-shoe comparison universe. They do not mean every higher value is preferable for every runner. Missing values mean unknown or not assessed and are represented by no metric row. Never store zero to stand in for missing data.
 
-## Proposed evaluative metric vocabulary
+## Approved evaluative metrics
 
-The pilot proposal uses a canonical 0–100 scale for RSM evaluations. Higher describes **more of the named quality**, which is not always universally better. Do not fill a score merely because the key exists.
-
-| Proposed `metric_key` | Plain-English meaning | Data type / allowed range | Is higher always better? | Missing-value handling |
+| `metric_key` | Plain-English meaning | Type and range | Is higher always better? | Missing value |
 | --- | --- | --- | --- | --- |
-| `cushioning` | Perceived amount of impact-softening/protection | Numeric 0–100 | No; preference and use matter | No row = unknown/not assessed |
-| `stability` | Perceived guidance and resistance to unwanted motion | Numeric 0–100 | No; more support is not right for everyone | No row = unknown/not assessed |
-| `responsiveness` | How quickly and directly the ride reacts to force | Numeric 0–100 | Contextual | No row = unknown/not assessed |
-| `flexibility` | How readily the shoe bends through the stride | Numeric 0–100 | No | No row = unknown/not assessed |
-| `durability` | Expected resistance to wear under intended use | Numeric 0–100 | Generally yes | No row = unknown/not assessed |
-| `comfort` | Overall underfoot/upper comfort under the stated test context | Numeric 0–100 | Generally yes, but subjective | No row = unknown/not assessed |
-| `ground_feel` | Degree to which the runner can feel the surface | Numeric 0–100 | No | No row = unknown/not assessed |
-| `energy_return` | Perceived or measured rebound/energy return | Numeric 0–100 | Generally yes for performance, still contextual | No row = unknown/not assessed |
-| `value_for_money` | Editorial value relative to price and performance | Numeric 0–100 | Generally yes | No row = unknown/not assessed |
+| `cushioning` | Perceived amount of impact-softening and protection | Numeric 0–100 | No; needs and preferences differ | No row |
+| `stability` | Perceived guidance and resistance to unwanted motion | Numeric 0–100 | No; more support is not right for everyone | No row |
+| `responsiveness` | How quickly and directly the ride reacts to force | Numeric 0–100 | Contextual | No row |
+| `flexibility` | How readily the shoe bends through the stride | Numeric 0–100 | No | No row |
+| `durability` | Expected resistance to wear under intended use | Numeric 0–100 | Generally | No row |
+| `comfort` | Overall underfoot and upper comfort in the stated evaluation context | Numeric 0–100 | Generally, but subjective | No row |
+| `ground_feel` | Degree to which the runner can feel the surface | Numeric 0–100 | No | No row |
+| `energy_return` | Perceived or measured rebound and returned energy | Numeric 0–100 | Contextual | No row |
+| `value` | Editorial value relative to price, performance, and expected useful life | Numeric 0–100 | Generally | No row |
 
-For an RSM 0–100 observation, use `value` for the canonical score and `unit = score_0_100`; leave `normalized_value` empty. `normalized_value` remains available when a legitimate external source scale must be retained in `value` and separately converted. The conversion method must be versioned and documented before use.
+## Approved use-case metrics
 
-## Proposed use-case vocabulary
-
-Use-case values are suitability scores on a 0–100 scale. Higher means more suitable for the named use under the documented methodology; it does not mean the shoe is objectively better overall.
-
-| Proposed `metric_key` | Plain-English meaning | Data type / allowed range | Is higher always better? | Missing-value handling |
+| `metric_key` | Plain-English meaning | Type and range | Is higher always better? | Missing value |
 | --- | --- | --- | --- | --- |
-| `daily_training_suitability` | Suitability for routine everyday running | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `long_run_suitability` | Suitability for longer-duration training runs | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `speed_workout_suitability` | Suitability for intervals, tempo, and faster workouts | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `racing_suitability` | Suitability for racing under the defined distance/context | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `walking_suitability` | Suitability for walking use | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `beginner_suitability` | Suitability for the methodology's defined beginner profile | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
-| `heavier_runner_suitability` | Suitability for the methodology's defined heavier-runner context | Numeric 0–100 | Yes, for this use only | No row = unknown/not assessed |
+| `daily_training` | Suitability for routine everyday running | Numeric 0–100 | Yes, for this use only | No row |
+| `long_run` | Suitability for sustained mileage while maintaining comfort, protection, stability, and ride quality. High cushioning alone does not guarantee a high score. | Numeric 0–100 | Yes, for this use only | No row |
+| `speed_workout` | Suitability for intervals, tempo runs, and faster workouts | Numeric 0–100 | Yes, for this use only | No row |
+| `racing` | Suitability for performance-oriented race efforts. V1 does not split this by race distance. | Numeric 0–100 | Yes, for this use only | No row |
+| `walking` | Suitability for walking use | Numeric 0–100 | Yes, for this use only | No row |
+| `beginner` | How forgiving and broadly usable the shoe is for a relatively inexperienced runner. Consider ease of use, stability, comfort, durability, versatility, and whether specialized running mechanics are required. | Numeric 0–100 | Yes, for this use only | No row |
+| `heavier_runner` | How well the shoe is expected to maintain cushioning, structure, stability, ride quality, and durability under increased loading. V1 does not use a hard bodyweight threshold. | Numeric 0–100 | Yes, for this use only | No row |
 
-Terms such as “beginner,” “long run,” race distance, and “heavier runner” need operational definitions before these scores can be produced. These scores are not quiz weights and should not be treated as personalized match scores.
+Use-case scores are editorial suitability assessments, not personalized match scores and not ranking weights.
 
-## Metric row contract
+## Objective vocabulary
 
-- `metric_key`: stable lowercase underscore key whose meaning must not silently change.
-- `metric_kind`: `evaluative` or `use_case`; objective facts are not accepted here.
-- `value`: source- or methodology-scale numeric observation.
-- `normalized_value`: optional 0–100 conversion when preserving a different raw source scale.
-- `unit`: declares the scale, such as `score_0_100`.
-- `source_type`: `manufacturer`, `review`, `lab_test`, `editorial_assessment`, `derived_methodology`, or `development_demo`.
-- `data_source`: human-readable source or methodology name.
-- `source_reference`: durable URL, report identifier, or methodology document reference.
-- `effective_date`: date the observation/version applies.
-- `metric_version`: definition or measurement-method version, not the shoe model version.
-- `confidence`: optional 0–1 assessment of evidence quality; the rubric must be approved before real use.
-- `verification_status`: `unverified`, `source_checked`, `cross_checked`, `methodology_reviewed`, or `development_demo`.
-- `notes`: context that affects interpretation, not a substitute for provenance.
-- `is_public`: independent publication switch.
+### Controlled classifications
 
-Missing metrics are represented by **no row**, not by zero. Zero is a real score at the bottom of an approved scale. Consumers must treat absence as unknown/not assessed and must not silently impute it. A future matching method must explicitly define its own missing-data behavior.
+- `primary_surface`: `road`, `trail`, `track`, or `hybrid`.
+- `support_category`: `neutral`, `stability`, or `motion_control`.
 
-## Versioning and corrections
+`manufacturer_support_label` separately preserves manufacturer wording such as `Balanced` or `Structured`. Do not infer canonical support automatically from that label or other marketing copy. A human reviewer must assign `support_category` explicitly; the manufacturer label may be present while canonical support remains unknown.
 
-Metric identity is `(shoe, metric_key, effective_date, metric_version, data_source)`. Public observations are immutable. Correct or supersede a public value with a new effective date or method version so historical ranking inputs remain reproducible.
+### Manufacturer specifications
 
-## Decisions required before approval
+Manufacturer-published values take precedence in v1 for:
 
-1. Approve or revise the metric keys and exact scoring anchors for 0, 25, 50, 75, and 100.
-2. Approve the `primary_surface`, `support_category`, and width taxonomies.
-3. Decide which weight variant is canonical for cross-shoe comparison and how gender-specific records are handled.
-4. Decide whether manufacturer stack/drop or independently measured stack/drop takes precedence when they differ.
-5. Define the confidence rubric, or leave confidence empty for the pilot.
-6. Define every use-case context before assigning any use-case scores.
-7. Decide the minimum provenance and verification level required before a row can become public.
+- `weight_value` with `weight_unit`
+- `heel_to_toe_drop_mm`
+- `general_stack_height_mm`
+- `heel_stack_height_mm`
+- `forefoot_stack_height_mm`
+- `msrp` and `currency`
+- `release_date`
+- `available_widths`
 
+Independent or laboratory measurements added later must be separate versioned observations. They must not silently replace manufacturer values.
+
+### Weight reference
+
+Prefer manufacturer-listed men's US size 9 weight when available. Preserve the original manufacturer measurement in:
+
+- `weight_value`, the positive numeric value as published.
+- `weight_unit`: `g` or `oz`.
+- `weight_reference_size`, preserving text such as `US 9` exactly.
+- `weight_reference_category`: `men`, `women`, `unisex`, or `not_stated`.
+
+For women-only shoes, unisex shoes, or products without men's US size 9 data, preserve the published value, unit, and reference. Do not mathematically convert weight between units, sizes, or categories during import. A weight cannot be imported without its unit and both reference fields.
+
+A future normalized comparison layer may derive a common unit for calculations. That derived value must not overwrite `weight_value`, `weight_unit`, or the source reference. Any persisted normalized measurement requires a separate documented field or versioned observation.
+
+The legacy `weight_oz` and `weight_reference` columns remain only for historical compatibility. The current importer preserves existing values during unrelated updates but does not populate them for new imports.
+
+### Stack height
+
+Use `general_stack_height_mm` only when the manufacturer publishes one stack value without identifying heel and forefoot. Never copy a general value into `heel_stack_height_mm` or `forefoot_stack_height_mm`. Those fields remain absent unless the source explicitly names the respective measurement.
+
+### Widths
+
+Store actual manufacturer width codes or labels. CSV values use `|` as the delimiter, for example `B|D|2E|4E`. Recognized compact codes are normalized to uppercase. Descriptive manufacturer labels are preserved after whitespace cleanup. Do not reduce stored widths to narrow, standard, wide, or extra-wide categories.
+
+An empty width list means widths were not recorded. It does not imply standard width only.
+
+## Provenance and confidence
+
+One provenance record per objective specification set is sufficient for v1:
+
+- `spec_source_name`
+- `spec_source_url`
+- `spec_verified_at`
+- `spec_verification_status`
+- `spec_notes`
+
+Per-field specification provenance is intentionally deferred. Use `spec_notes` to document a material source caveat during the pilot.
+
+Metric provenance remains versioned per observation through `source_type`, `data_source`, `source_reference`, `effective_date`, and `metric_version`. Confidence remains optional. Do not fabricate a confidence score when no approved rubric exists.
+
+## Publication requirements
+
+A real shoe may become public only after its core identity and objective specification set pass the verification workflow. The allowed public specification states are `source_checked` and `cross_checked`. Explicit development fixtures remain separately identifiable through demo metadata.
+
+Metrics may remain partially unknown. A public metric row must have an allowed reviewed verification state; an unverified metric may remain internal. Missing metrics must never be generated merely to make a shoe publishable.
+
+## Metric import contract
+
+- Use only the approved key for the selected `metric_kind`.
+- Store the canonical score in `value` and use `unit = score_0_100`.
+- The v1 CSV does not include `normalized_value`; the database column remains for historical compatibility.
+- For real v1 rows, `metric_version` must start with `metric-v1:`, followed by a method version such as `metric-v1:editorial-v1`.
+- `confidence` is optional.
+- No CSV row means unknown/not assessed. A row with `value = 0` is an explicit, assessed zero.
+
+## Future vocabulary versions
+
+Never redefine a v1 key in place. To change meaning, range, or key membership:
+
+1. Create `docs/METRICS_V2.md` or a clearly versioned successor document.
+2. Use a new prefix such as `metric-v2:` in `metric_version`.
+3. Add a new migration that replaces the vocabulary constraint with a rule accepting both historical v1 rows and approved v2 rows.
+4. Update importer constants and templates in the same change.
+5. Add new metric rows; do not update or delete public v1 observations.
+
+This preserves historical ranking inputs and lets old and new methodologies coexist without silently changing what a stored score means.

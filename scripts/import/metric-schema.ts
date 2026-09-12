@@ -3,12 +3,35 @@ import { z } from "zod";
 import { normalizeSlug, normalizeWhitespace, type CsvRow } from "./csv";
 import type { RowValidationResult } from "./shoe-schema";
 
+export const METRIC_VOCABULARY_VERSION = "metric-v1" as const;
+
+export const EVALUATIVE_METRIC_KEYS = [
+  "cushioning",
+  "stability",
+  "responsiveness",
+  "flexibility",
+  "durability",
+  "comfort",
+  "ground_feel",
+  "energy_return",
+  "value",
+] as const;
+
+export const USE_CASE_METRIC_KEYS = [
+  "daily_training",
+  "long_run",
+  "speed_workout",
+  "racing",
+  "walking",
+  "beginner",
+  "heavier_runner",
+] as const;
+
 export const METRIC_IMPORT_COLUMNS = [
   "shoe_slug",
   "metric_key",
   "metric_kind",
   "value",
-  "normalized_value",
   "unit",
   "source_type",
   "data_source",
@@ -61,9 +84,8 @@ const metricSchema = z.object({
   shoe_slug: z.preprocess(cleaned, z.string().min(1)),
   metric_key: z.preprocess((value) => String(cleaned(value)).toLowerCase().replace(/[\s-]+/g, "_"), z.string().regex(/^[a-z][a-z0-9_]*$/)),
   metric_kind: z.preprocess((value) => String(cleaned(value)).toLowerCase().replace(/[-\s]+/g, "_"), z.enum(["evaluative", "use_case"])),
-  value: numericValue({}),
-  normalized_value: numericValue({ min: 0, max: 100, optional: true }),
-  unit: optionalText,
+  value: numericValue({ min: 0, max: 100 }),
+  unit: z.preprocess(cleaned, z.literal("score_0_100")),
   source_type: z.preprocess(
     (value) => String(cleaned(value)).toLowerCase().replace(/[-\s]+/g, "_"),
     z.enum(["manufacturer", "review", "lab_test", "editorial_assessment", "derived_methodology", "development_demo"]),
@@ -125,8 +147,20 @@ export function normalizeMetricRow(row: CsvRow): RowValidationResult<NormalizedM
     return { success: false, line: row.line, message: "value is required" };
   }
 
-  if (result.data.metric_kind === "use_case" && (result.data.value < 0 || result.data.value > 100)) {
-    return { success: false, line: row.line, message: "use_case metric values must be between 0 and 100" };
+  const allowedKeys = result.data.metric_kind === "evaluative"
+    ? EVALUATIVE_METRIC_KEYS
+    : USE_CASE_METRIC_KEYS;
+
+  if (!(allowedKeys as readonly string[]).includes(result.data.metric_key)) {
+    return {
+      success: false,
+      line: row.line,
+      message: `metric_key "${result.data.metric_key}" is not approved for metric_kind "${result.data.metric_kind}" in Metric Vocabulary Version 1`,
+    };
+  }
+
+  if (result.data.source_type !== "development_demo" && !result.data.metric_version.startsWith(`${METRIC_VOCABULARY_VERSION}:`)) {
+    return { success: false, line: row.line, message: `metric_version must start with "${METRIC_VOCABULARY_VERSION}:"` };
   }
 
   if (result.data.metric_kind === "use_case" && !["editorial_assessment", "derived_methodology", "development_demo"].includes(result.data.source_type)) {
@@ -149,7 +183,7 @@ export function normalizeMetricRow(row: CsvRow): RowValidationResult<NormalizedM
       metricKey: result.data.metric_key,
       metricKind: result.data.metric_kind,
       value: result.data.value,
-      normalizedValue: result.data.normalized_value ?? null,
+      normalizedValue: null,
       unit: result.data.unit ?? null,
       sourceType: result.data.source_type,
       dataSource: result.data.data_source,

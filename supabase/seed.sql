@@ -304,7 +304,11 @@ values
 
   update public.shoe_metrics
   set
+    value = coalesce(normalized_value, value),
+    normalized_value = null,
+    unit = 'score_0_100',
     source_type = 'development_demo',
+    metric_version = 'metric-v1:development-demo',
     verification_status = 'development_demo',
     is_public = true
   where id between 'de000000-0000-4000-8000-000000000701'::uuid
