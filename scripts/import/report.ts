@@ -4,7 +4,7 @@ import path from "node:path";
 export type ImportMode = "dry-run" | "apply";
 
 export type ImportReport = {
-  entity: "shoes" | "metrics" | "rankings";
+  entity: "shoes" | "metrics" | "retailer-links" | "rankings";
   mode: ImportMode;
   sourceFile: string;
   startedAt: string;
@@ -29,7 +29,13 @@ export async function writeImportReport(report: ImportReport): Promise<string> {
   const errorLines = report.errors.length
     ? report.errors.map((error) => `- ${error}`).join("\n")
     : "- None";
-  const entityTitle = report.entity === "shoes" ? "Shoe" : report.entity === "metrics" ? "Metric" : "Ranking";
+  const entityTitle = report.entity === "shoes"
+    ? "Shoe"
+    : report.entity === "metrics"
+      ? "Metric"
+      : report.entity === "retailer-links"
+        ? "Retailer link"
+        : "Ranking";
   const runLine = report.rankingRunId ? `\n- Ranking run ID: ${report.rankingRunId}` : "";
   const markdown = `# ${entityTitle} import report
 

@@ -16,7 +16,7 @@ This document describes the intended architecture. It does not mean every route 
 - Data-driven shoe catalog, reusable shoe detail route, and affiliate retailer presentation
 - Data-driven ranking-category routes with snapshot selection and derived historical movement
 - Repository-managed MDX blog with validated frontmatter and live database-backed shoe/ranking embeds
-- Local TypeScript CSV import tools with schema validation, explicit dry-run/apply modes, and server-only privileged credentials
+- Local TypeScript CSV import tools for shoes, metrics, retailer links, and rankings with schema validation, explicit dry-run/apply modes, readable reports, and server-only privileged credentials
 - Transactional ranking-snapshot imports with content-based idempotency and a separate explicit publication operation
 - Typed, framework-independent matching contracts with intentionally non-operational engine stubs
 - Supabase Auth-backed private admin foundation with database-enforced administrator membership
@@ -49,7 +49,8 @@ Example ranking slugs include `best-daily-trainers`, `best-cushioned-running-sho
 ## Admin routes
 
 `/admin`, `/admin/shoes`, `/admin/rankings`, and `/admin/imports` form a private,
-read-only operational area. `/admin/login` uses the existing browser Supabase
+read-only operational area. It exposes publication/review state, metric and
+retailer-link counts, and draft/published ranking summaries. `/admin/login` uses the existing browser Supabase
 client for password authentication. The protected route-group layout and every
 admin data-access function call the centralized `lib/admin/auth.ts` authorization
 boundary on the server.
@@ -188,3 +189,8 @@ The current application does not implement quiz logic, the ranking algorithm,
 admin mutation tools, browser uploads, or analytics. The public shoe catalog,
 ranking snapshots, MDX article embeds, and private admin summaries are
 read-only and data-driven.
+
+The recurring spreadsheet procedure is documented in `docs/DATA_WORKFLOW.md`.
+Retailer-link creation and updates use a service-role-only transactional
+database function; public pages read those links through anonymous
+RLS-protected data access.

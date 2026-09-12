@@ -4,7 +4,10 @@ import { requireAdmin } from "@/lib/admin/auth";
 
 export type AdminDashboardSummary = {
   activeShoes: number;
+  publicShoes: number;
+  nonPublicShoes: number;
   brands: number;
+  metrics: number;
   retailerLinks: number;
   rankingRuns: number;
   draftRankingRuns: number;
@@ -16,6 +19,10 @@ export type AdminShoeListItem = {
   brandName: string;
   modelName: string;
   status: string;
+  isPublic: boolean;
+  specificationReview: string;
+  metricCount: number;
+  retailerLinkCount: number;
   msrp: number | null;
   currency: string;
 };
@@ -33,9 +40,13 @@ type AdminShoeRow = {
   id: string;
   model_name: string;
   status: string;
+  is_public: boolean;
+  spec_verification_status: string;
   msrp: number | string | null;
   currency: string;
   brands: { name: string } | { name: string }[] | null;
+  shoe_metrics: { count: number }[] | null;
+  shoe_retailer_links: { count: number }[] | null;
 };
 
 type AdminRankingRunRow = {
@@ -53,9 +64,12 @@ function assertQuery(error: { message: string } | null, label: string) {
 
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
   const { supabase } = await requireAdmin();
-  const [activeShoes, brands, retailerLinks, rankingRuns, draftRuns, latestPublished] = await Promise.all([
+  const [activeShoes, publicShoes, nonPublicShoes, brands, metrics, retailerLinks, rankingRuns, draftRuns, latestPublished] = await Promise.all([
     supabase.from("shoes").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("shoes").select("id", { count: "exact", head: true }).eq("is_public", true),
+    supabase.from("shoes").select("id", { count: "exact", head: true }).eq("is_public", false),
     supabase.from("brands").select("id", { count: "exact", head: true }),
+    supabase.from("shoe_metrics").select("id", { count: "exact", head: true }),
     supabase.from("shoe_retailer_links").select("id", { count: "exact", head: true }),
     supabase.from("ranking_runs").select("id", { count: "exact", head: true }),
     supabase.from("ranking_runs").select("id", { count: "exact", head: true }).eq("status", "draft"),
@@ -63,7 +77,10 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
   ]);
 
   assertQuery(activeShoes.error, "active shoe count");
+  assertQuery(publicShoes.error, "public shoe count");
+  assertQuery(nonPublicShoes.error, "non-public shoe count");
   assertQuery(brands.error, "brand count");
+  assertQuery(metrics.error, "metric count");
   assertQuery(retailerLinks.error, "retailer-link count");
   assertQuery(rankingRuns.error, "ranking-run count");
   assertQuery(draftRuns.error, "draft ranking-run count");
@@ -71,7 +88,10 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
 
   return {
     activeShoes: activeShoes.count ?? 0,
+    publicShoes: publicShoes.count ?? 0,
+    nonPublicShoes: nonPublicShoes.count ?? 0,
     brands: brands.count ?? 0,
+    metrics: metrics.count ?? 0,
     retailerLinks: retailerLinks.count ?? 0,
     rankingRuns: rankingRuns.count ?? 0,
     draftRankingRuns: draftRuns.count ?? 0,
@@ -83,7 +103,7 @@ export async function listAdminShoes(): Promise<AdminShoeListItem[]> {
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from("shoes")
-    .select("id, model_name, status, msrp, currency, brands(name)")
+    .select("id, model_name, status, is_public, spec_verification_status, msrp, currency, brands(name), shoe_metrics(count), shoe_retailer_links(count)")
     .order("model_name", { ascending: true });
 
   assertQuery(error, "admin shoe list");
@@ -97,6 +117,10 @@ export async function listAdminShoes(): Promise<AdminShoeListItem[]> {
       brandName: brand?.name ?? "Unknown brand",
       modelName: row.model_name,
       status: row.status,
+      isPublic: row.is_public,
+      specificationReview: row.spec_verification_status,
+      metricCount: row.shoe_metrics?.[0]?.count ?? 0,
+      retailerLinkCount: row.shoe_retailer_links?.[0]?.count ?? 0,
       msrp: Number.isFinite(parsedMsrp) ? parsedMsrp : null,
       currency: row.currency,
     };

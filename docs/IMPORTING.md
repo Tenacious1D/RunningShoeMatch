@@ -2,10 +2,11 @@
 
 The import workflow is a local, server-side tool. It is not bundled into the website and never sends a privileged Supabase credential to browser code.
 
-Real shoe data uses two spreadsheet-friendly CSV files:
+Operational catalog data uses three spreadsheet-friendly CSV files:
 
 - `data/templates/shoes-import-template.csv`: one row per shoe for catalog facts and typed objective specifications.
 - `data/templates/shoe-metrics-import-template.csv`: one row per versioned evaluative or use-case observation.
+- `data/templates/retailer-links-import-template.csv`: one row per current shoe/retailer relationship.
 
 This split keeps common facts queryable without adding a column for every future evaluation. `docs/METRICS.md` defines the frozen Metric Vocabulary Version 1 contract.
 
@@ -141,6 +142,37 @@ The importer never generates metric rows for empty spreadsheet cells. Omit an un
 
 Metric idempotency uses `(shoe_slug, metric_key, effective_date, metric_version, data_source)`, matching the database uniqueness rule. Public observations are immutable. Correct or supersede them with a new date or method version; do not rewrite history.
 
+## Retailer-link CSV: one row per shoe/retailer
+
+Keep this exact header order:
+
+```text
+shoe_slug,retailer,retailer_slug,retailer_homepage_url,create_retailer,retailer_active,affiliate_url,regular_url,displayed_price,currency,is_primary,active,last_verified_at
+```
+
+| Column | Required | Format / behavior |
+| --- | --- | --- |
+| `shoe_slug` | Yes | Existing shoe slug |
+| `retailer` | Yes | Exact display name for the existing or requested retailer |
+| `retailer_slug` | Yes | Stable retailer identifier; normalized to lowercase hyphens |
+| `retailer_homepage_url` | For creation | Complete `http://` or `https://` homepage |
+| `create_retailer` | Yes | `false` normally; `true` explicitly authorizes creation when missing |
+| `retailer_active` | For creation | Required boolean only when creating the retailer |
+| `affiliate_url` | Yes | Current complete affiliate destination |
+| `regular_url` | No | Non-affiliate destination when available |
+| `displayed_price` | No | Nonnegative price; currency symbols and commas accepted |
+| `currency` | Yes | Three-letter uppercase code such as `USD` |
+| `is_primary` | Yes | Whether this is the preferred current offer |
+| `active` | Yes | Whether the link is eligible to appear publicly |
+| `last_verified_at` | No | Date the destination/price was checked, `YYYY-MM-DD` |
+
+```powershell
+npm run import:retailer-links -- data/imports/retailer-links.csv --dry-run
+npm run import:retailer-links -- data/imports/retailer-links.csv --apply
+```
+
+The identity is `(shoe_slug, retailer_slug)`, so URL and price changes update the existing relationship. Complete-file validation failure prevents all writes, and apply commits missing-retailer creation plus link changes in one transaction. Missing retailers are never created implicitly: set `create_retailer=true` and provide the homepage and active state. Only one active primary link is allowed per shoe; when changing it, include both the old relationship with `is_primary=false` and the new one with `is_primary=true`.
+
 ## Spreadsheet and CSV rules
 
 - Save UTF-8 comma-separated CSV; do not rename an `.xlsx` file to `.csv`.
@@ -152,22 +184,25 @@ Metric idempotency uses `(shoe_slug, metric_key, effective_date, metric_version,
 - Empty optional shoe cells intentionally clear current typed fields on update. Legacy `weight_oz` and `weight_reference` values are carried forward because they are absent from the new CSV contract.
 - A missing metric is represented by no metric row, never a zero placeholder.
 - Do not include formulas; export their calculated values.
-- Do not include retailer or affiliate URLs. Those belong in `shoe_retailer_links`.
+- Do not include retailer or affiliate URLs in shoe or metric CSV files. Use the retailer-link CSV.
 
 Whitespace is trimmed, repeated whitespace is collapsed, slugs are normalized, and numeric text is parsed. Duplicate normalized shoe slugs and duplicate metric identities in one file are rejected before writes.
 
 ## Reports and failure behavior
 
-Every attempt writes a Markdown report under `data/imports/reports/` with added, updated, skipped, invalid, and error counts. Reports are ignored by Git. Complete-file CSV and row validation occurs before database mutations. Row-level database errors retain their source line numbers.
+Every import attempt writes a Markdown report under `data/imports/reports/` with added, updated, skipped, invalid, and error counts. Reports are ignored by Git. Complete-file CSV and row validation occurs before database mutations. Row-level database errors retain their source line numbers.
 
 ## Importer tests and fictional fixture
 
-`data/imports/demo-shoes-import.csv` contains three fictional, non-public shoes solely for importer testing. `data/imports/demo-shoe-metrics-import.csv` contains two fictional, non-public Metric Vocabulary Version 1 observations for a shoe created by the development seed.
+`data/imports/demo-shoes-import.csv` contains three fictional, non-public shoes solely for importer testing. `data/imports/demo-shoe-metrics-import.csv` contains two fictional, non-public Metric Vocabulary Version 1 observations for a shoe created by the development seed. `data/imports/demo-retailer-links-import.csv` contains fictional `.example` destinations for local importer and idempotency testing.
 
 ```powershell
 npm run test:import
 npm run import:shoes -- data/imports/demo-shoes-import.csv --dry-run
 npm run import:metrics -- data/imports/demo-shoe-metrics-import.csv --dry-run
+npm run import:retailer-links -- data/imports/demo-retailer-links-import.csv --dry-run
 ```
+
+See `docs/DATA_WORKFLOW.md` for publication states, corrections, and the complete recurring operating sequence.
 
 The repository includes a non-public 12-shoe objective pilot under `data/pilot/`. It has not been imported or published. No evaluative scores, use-case scores, ranking weights, or real ranking results are included.

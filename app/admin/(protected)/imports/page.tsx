@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const workflows = [
   { title: "Shoe catalog", dryRun: "npm run import:shoes -- data/imports/your-shoes.csv --dry-run", apply: "npm run import:shoes -- data/imports/your-shoes.csv --apply" },
   { title: "Shoe metrics", dryRun: "npm run import:metrics -- data/imports/your-metrics.csv --dry-run", apply: "npm run import:metrics -- data/imports/your-metrics.csv --apply" },
+  { title: "Retailer links", dryRun: "npm run import:retailer-links -- data/imports/your-retailer-links.csv --dry-run", apply: "npm run import:retailer-links -- data/imports/your-retailer-links.csv --apply" },
   { title: "Ranking snapshot", dryRun: "npm run import:rankings -- data/imports/your-rankings.csv --dry-run", apply: "npm run import:rankings -- data/imports/your-rankings.csv --apply" },
 ] as const;
 
@@ -12,7 +13,7 @@ export default function AdminImportsPage() {
   return (
     <main>
       <AdminPageHeader title="Imports" description="CSV imports currently run from a trusted local terminal using the server-only Supabase secret. Browser uploads are intentionally not enabled yet." />
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {workflows.map((workflow) => (
           <Card key={workflow.title}>
             <CardContent className="p-5 sm:p-6">
@@ -26,7 +27,7 @@ export default function AdminImportsPage() {
         ))}
       </div>
       <div className="mt-6 rounded-lg border border-border bg-card p-5 text-sm leading-6 text-muted-foreground sm:p-6">
-        Ranking imports create drafts. Publish an approved draft separately with <code className="rounded bg-muted px-1.5 py-1 text-foreground">npm run rankings:publish -- &lt;ranking-run-id&gt;</code>. See <code className="text-foreground">docs/IMPORTING.md</code> and <code className="text-foreground">docs/RANKING_IMPORTS.md</code> for the full safeguards.
+        Ranking imports create drafts. Publish an approved draft separately with <code className="rounded bg-muted px-1.5 py-1 text-foreground">npm run rankings:publish -- &lt;ranking-run-id&gt;</code>. See <code className="text-foreground">docs/DATA_WORKFLOW.md</code>, <code className="text-foreground">docs/IMPORTING.md</code>, and <code className="text-foreground">docs/RANKING_IMPORTS.md</code> for the full safeguards.
       </div>
     </main>
   );

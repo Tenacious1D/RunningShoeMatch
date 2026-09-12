@@ -1,9 +1,9 @@
 # Real Pilot Data Verification
 
-Status: **Stage 1 prepared for review; not imported or published**  
+Status: **Stage 1 imported into the linked Supabase project and remains non-public; Stage 2 scores are not assigned**
 Verification date: **2026-09-11**
 
-This pilot deliberately tests different uses, support systems, surfaces, price points, units, and manufacturer terminology. `pilot-shoes.csv` contains only identity and objective manufacturer data. `pilot-shoe-metrics.csv` contains its header only; evaluative and use-case scoring is a separate Stage 2 activity.
+This pilot deliberately tests different uses, support systems, surfaces, price points, units, and manufacturer terminology. `pilot-shoes.csv` contains only identity and objective manufacturer data. The 12 rows have been imported into the linked project with `is_public=false`. `pilot-shoe-metrics.csv` contains its header only; evaluative and use-case scoring remains a separate Stage 2 activity.
 
 Every pilot row has `is_public=false`. `source_checked` means the cited official page was reviewed and its supported values were transcribed. It does not mean every possible specification is present, and it does not authorize publication.
 
@@ -92,16 +92,14 @@ Legend: `Yes` = explicitly verified from the cited official page; `Unknown` = no
 - Keep any future unit normalization in a derived comparison layer rather than changing the stored manufacturer value.
 - Keep the pilot non-public through import and review. Public visibility should require the existing core identity/objective verification workflow.
 
-## 8. Import readiness
+## 8. Import and evidence state
 
-`pilot-shoes.csv` uses the additive unit-aware objective-spec contract. Apply migration `20260912010000_unit_aware_objective_specs.sql` to the intended development database before running the importer. A successful dry run validates CSV shape, vocabulary, normalization, source requirements, and database-facing upsert planning; it does not publish or write any row.
-
-Run from the project root:
+The linked project contains the 12 objective pilot records and all remain non-public. The repeatable dry run remains useful for validating the source file without modifying the database:
 
 ```powershell
 npm run import:shoes -- data/pilot/pilot-shoes.csv --dry-run
 ```
 
-Do **not** add `--apply` during this phase.
+Evidence collection now uses `pilot-evidence.csv` and `pilot-evidence-coverage.csv`. Only the 12 official manufacturer sources already verified here are initialized. Independent laboratory and wear-test availability remains `not_checked` until directly verified.
 
-The Stage 2 file is intentionally empty except for its schema header. No evaluative score, use-case score, ranking result, match score, or ranking weight has been created.
+The Stage 2 metric file remains empty except for its schema header. No evaluative score, use-case score, ranking result, match score, ranking weight, or quiz weight has been created.

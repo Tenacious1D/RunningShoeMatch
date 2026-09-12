@@ -26,7 +26,7 @@ values
 insert into public.shoe_retailer_links (id, shoe_id, retailer_id, affiliate_url, active, is_primary)
 values
   ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000021', 'https://retailer.example/public', true, true),
-  ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000021', 'https://retailer.example/inactive', false, false),
+  ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000021', 'https://retailer.example/inactive', false, false),
   ('00000000-0000-0000-0000-000000000033', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000022', 'https://inactive.example/hidden', true, false);
 
 insert into public.ranking_categories (id, name, slug, active)

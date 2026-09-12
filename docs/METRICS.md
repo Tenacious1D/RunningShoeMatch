@@ -2,6 +2,8 @@
 
 **Status: approved and frozen for the pilot import.** This document defines the v1 shoe attribute and metric vocabulary. It does not define ranking weights, quiz questions, personalized match weights, or a recommendation formula.
 
+The evidence-to-score process and behavioral anchors are defined separately in `docs/SCORING_METHODOLOGY.md`; source collection follows `docs/EVIDENCE_COLLECTION.md`. Metric Scoring Methodology v1 uses the stored identifier `metric-v1:scoring-methodology-v1`; vocabulary version and scoring-methodology version remain explicit so historical observations are interpretable.
+
 ## Data classes
 
 | Class | Meaning | Storage |

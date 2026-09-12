@@ -1,0 +1,3 @@
+shoe_slug,retailer,retailer_slug,retailer_homepage_url,create_retailer,retailer_active,affiliate_url,regular_url,displayed_price,currency,is_primary,active,last_verified_at
+demo-aero-day-2,DEVELOPMENT DEMO: Fleet Lab,demo-fleet-lab,,false,,https://demo-fleet.example/imported-demo-shoes/demo-aero-day-2,https://demo-fleet.example/catalog/demo-aero-day-2,138.50,USD,true,true,2026-09-11
+import-demo-road-cadence,DEVELOPMENT DEMO: Import Retailer,demo-import-retailer,https://demo-import-retailer.example,true,true,https://demo-import-retailer.example/demo-shoes/import-demo-road-cadence,,129.00,USD,true,true,2026-09-11

@@ -124,7 +124,9 @@ Neither function is executable by `anon` or `authenticated`. The local TypeScrip
 
 ## Affiliate-link model
 
-A shoe can have multiple `shoe_retailer_links`. The link table stores the affiliate URL, optional regular URL and displayed price, currency, active and primary state, and verification time. A partial unique index permits only one active primary offer per shoe while allowing multiple alternate retailer links.
+A shoe can have multiple `shoe_retailer_links`, but only one current relationship per retailer. The `(shoe_id, retailer_id)` identity lets spreadsheet reimports update a retailer's URL or price without creating duplicates. The link table stores the affiliate URL, optional regular URL and displayed price, currency, active and primary state, and verification time. A partial unique index permits only one active primary offer per shoe while allowing multiple alternate retailers.
+
+The service-role-only `import_retailer_links(jsonb, jsonb)` function explicitly creates approved missing retailers and upserts their shoe relationships in one transaction. Anonymous and authenticated roles cannot execute it. The local TypeScript importer performs CSV, reference, name/slug, and final primary-state validation before calling the function.
 
 Affiliate URLs never belong on shoes, ranking results, React components, or MDX articles. Ranking output references the shoe; presentation resolves currently active offers separately.
 
