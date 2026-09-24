@@ -2,6 +2,13 @@
 
 Ranking updates use a local, server-side CSV workflow. One CSV represents one complete ranking snapshot (`ranking_run`) and may contain several ranking categories. Imports always create a **draft**. Publication is a separate, explicit command.
 
+There are now two supported ways to create the snapshot:
+
+- calculate it from versioned source inputs with `rankings:generate` using `overall-score-v1`
+- import a fully prepared snapshot CSV with `import:rankings`
+
+The automated path is documented in `AUTOMATED_RANKINGS.md`. The manual snapshot importer remains available for reviewed corrections, other methodology versions, and migrations from an external ranking workbook.
+
 The scripts load `.env.local` locally and require:
 
 ```dotenv

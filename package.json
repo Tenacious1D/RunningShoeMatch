@@ -12,11 +12,15 @@
     "import:shoes": "tsx scripts/import-shoes.ts",
     "import:metrics": "tsx scripts/import-metrics.ts",
     "import:retailer-links": "tsx scripts/import-retailer-links.ts",
+    "import:ranking-reviews": "tsx scripts/import-ranking-reviews.ts",
+    "import:ranking-inputs": "tsx scripts/import-ranking-inputs.ts",
     "import:rankings": "tsx scripts/import-rankings.ts",
+    "rankings:generate": "tsx scripts/generate-rankings.ts",
     "rankings:publish": "tsx scripts/publish-ranking-run.ts",
-    "test:import": "tsx --test tests/import/import-validation.test.ts tests/import/retailer-link-import.test.ts tests/import/ranking-import.test.ts",
+    "test:import": "tsx --test tests/import/import-validation.test.ts tests/import/retailer-link-import.test.ts tests/import/ranking-import.test.ts tests/import/ranking-source-import.test.ts",
+    "test:rankings": "tsx --test tests/rankings/overall-score-v1.test.ts",
     "test:matching": "tsx --test tests/matching/matching-boundary.test.ts",
-    "test": "npm run test:import && npm run test:matching"
+    "test": "npm run test:import && npm run test:rankings && npm run test:matching"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

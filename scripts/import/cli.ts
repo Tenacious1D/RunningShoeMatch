@@ -23,7 +23,7 @@ export function parseImportArguments(argv: string[], command: string): ImportArg
   };
 }
 
-export function createEmptyReport(entity: "shoes" | "metrics" | "retailer-links" | "rankings", mode: ImportMode, sourceFile: string): ImportReport {
+export function createEmptyReport(entity: ImportReport["entity"], mode: ImportMode, sourceFile: string): ImportReport {
   const now = new Date().toISOString();
   return {
     entity,

@@ -11,6 +11,9 @@ export type AdminDashboardSummary = {
   retailerLinks: number;
   rankingRuns: number;
   draftRankingRuns: number;
+  rankingReviewObservations: number;
+  rankingInputVersions: number;
+  rankingEligibilityRows: number;
   latestPublishedRankingDate: string | null;
 };
 
@@ -64,7 +67,7 @@ function assertQuery(error: { message: string } | null, label: string) {
 
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
   const { supabase } = await requireAdmin();
-  const [activeShoes, publicShoes, nonPublicShoes, brands, metrics, retailerLinks, rankingRuns, draftRuns, latestPublished] = await Promise.all([
+  const [activeShoes, publicShoes, nonPublicShoes, brands, metrics, retailerLinks, rankingRuns, draftRuns, rankingReviews, rankingInputs, rankingEligibility, latestPublished] = await Promise.all([
     supabase.from("shoes").select("id", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("shoes").select("id", { count: "exact", head: true }).eq("is_public", true),
     supabase.from("shoes").select("id", { count: "exact", head: true }).eq("is_public", false),
@@ -73,6 +76,9 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
     supabase.from("shoe_retailer_links").select("id", { count: "exact", head: true }),
     supabase.from("ranking_runs").select("id", { count: "exact", head: true }),
     supabase.from("ranking_runs").select("id", { count: "exact", head: true }).eq("status", "draft"),
+    supabase.from("shoe_review_observations").select("id", { count: "exact", head: true }),
+    supabase.from("shoe_ranking_inputs").select("id", { count: "exact", head: true }),
+    supabase.from("shoe_ranking_category_eligibility").select("id", { count: "exact", head: true }),
     supabase.from("ranking_runs").select("effective_date").eq("status", "published").order("effective_date", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
@@ -84,6 +90,9 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
   assertQuery(retailerLinks.error, "retailer-link count");
   assertQuery(rankingRuns.error, "ranking-run count");
   assertQuery(draftRuns.error, "draft ranking-run count");
+  assertQuery(rankingReviews.error, "ranking review observation count");
+  assertQuery(rankingInputs.error, "ranking input version count");
+  assertQuery(rankingEligibility.error, "ranking eligibility count");
   assertQuery(latestPublished.error, "latest published ranking date");
 
   return {
@@ -95,6 +104,9 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
     retailerLinks: retailerLinks.count ?? 0,
     rankingRuns: rankingRuns.count ?? 0,
     draftRankingRuns: draftRuns.count ?? 0,
+    rankingReviewObservations: rankingReviews.count ?? 0,
+    rankingInputVersions: rankingInputs.count ?? 0,
+    rankingEligibilityRows: rankingEligibility.count ?? 0,
     latestPublishedRankingDate: latestPublished.data?.effective_date ?? null,
   };
 }

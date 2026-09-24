@@ -6,6 +6,8 @@ const workflows = [
   { title: "Shoe catalog", dryRun: "npm run import:shoes -- data/imports/your-shoes.csv --dry-run", apply: "npm run import:shoes -- data/imports/your-shoes.csv --apply" },
   { title: "Shoe metrics", dryRun: "npm run import:metrics -- data/imports/your-metrics.csv --dry-run", apply: "npm run import:metrics -- data/imports/your-metrics.csv --apply" },
   { title: "Retailer links", dryRun: "npm run import:retailer-links -- data/imports/your-retailer-links.csv --dry-run", apply: "npm run import:retailer-links -- data/imports/your-retailer-links.csv --apply" },
+  { title: "Ranking reviews", dryRun: "npm run import:ranking-reviews -- data/imports/your-ranking-reviews.csv --dry-run", apply: "npm run import:ranking-reviews -- data/imports/your-ranking-reviews.csv --apply" },
+  { title: "Ranking inputs", dryRun: "npm run import:ranking-inputs -- data/imports/your-ranking-inputs.csv --dry-run", apply: "npm run import:ranking-inputs -- data/imports/your-ranking-inputs.csv --apply" },
   { title: "Ranking snapshot", dryRun: "npm run import:rankings -- data/imports/your-rankings.csv --dry-run", apply: "npm run import:rankings -- data/imports/your-rankings.csv --apply" },
 ] as const;
 
@@ -27,7 +29,7 @@ export default function AdminImportsPage() {
         ))}
       </div>
       <div className="mt-6 rounded-lg border border-border bg-card p-5 text-sm leading-6 text-muted-foreground sm:p-6">
-        Ranking imports create drafts. Publish an approved draft separately with <code className="rounded bg-muted px-1.5 py-1 text-foreground">npm run rankings:publish -- &lt;ranking-run-id&gt;</code>. See <code className="text-foreground">docs/DATA_WORKFLOW.md</code>, <code className="text-foreground">docs/IMPORTING.md</code>, and <code className="text-foreground">docs/RANKING_IMPORTS.md</code> for the full safeguards.
+        Overall Score v1 drafts can be generated with <code className="rounded bg-muted px-1.5 py-1 text-foreground">npm run rankings:generate -- --effective-date YYYY-MM-DD --dry-run</code>, then repeated with <code className="rounded bg-muted px-1.5 py-1 text-foreground">--apply</code>. Ranking generation and manual snapshot imports both create drafts. Publish an approved draft separately with <code className="rounded bg-muted px-1.5 py-1 text-foreground">npm run rankings:publish -- &lt;ranking-run-id&gt;</code>. See <code className="text-foreground">docs/AUTOMATED_RANKINGS.md</code> and <code className="text-foreground">docs/RANKING_IMPORTS.md</code> for the safeguards.
       </div>
     </main>
   );

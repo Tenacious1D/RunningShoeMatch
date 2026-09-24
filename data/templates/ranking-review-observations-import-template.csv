@@ -1,0 +1,2 @@
+shoe_slug,source_key,rating,review_count,product_url,observed_at,verification_status,notes
+example-shoe,running-warehouse,4.5,125,https://example.com/product,2026-09-23,source_checked,Template example only - remove before use

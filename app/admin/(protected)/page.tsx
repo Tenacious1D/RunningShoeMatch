@@ -15,6 +15,9 @@ const cards = [
   { key: "retailerLinks", label: "Retailer links", icon: Store, href: "/admin/shoes" },
   { key: "rankingRuns", label: "Ranking runs", icon: Database, href: "/admin/rankings" },
   { key: "draftRankingRuns", label: "Draft ranking runs", icon: CalendarClock, href: "/admin/rankings" },
+  { key: "rankingReviewObservations", label: "Ranking review observations", icon: Gauge, href: "/admin/imports" },
+  { key: "rankingInputVersions", label: "Ranking input versions", icon: Database, href: "/admin/imports" },
+  { key: "rankingEligibilityRows", label: "Category eligibility rows", icon: Tags, href: "/admin/imports" },
 ] as const;
 
 export default async function AdminDashboardPage() {

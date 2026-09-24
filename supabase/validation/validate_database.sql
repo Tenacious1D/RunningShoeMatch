@@ -212,6 +212,35 @@ with checks as (
       from public.shoe_metrics
       where unit is distinct from 'score_0_100'
     )
+
+  union all
+
+  select
+    15,
+    'Ranking review observations use approved verified source records',
+    (
+      select count(*)
+      from public.shoe_review_observations
+      where source_key not in ('running-warehouse', 'fleet-feet', 'zappos', 'marathon-sports', 'road-runner-sports')
+        or rating not between 1 and 5
+        or review_count < 0
+        or verification_status not in ('source_checked', 'cross_checked')
+    )
+
+  union all
+
+  select
+    16,
+    'Ranking category eligibility belongs to a matching reviewed input version',
+    (
+      select count(*)
+      from public.shoe_ranking_category_eligibility as eligibility
+      left join public.shoe_ranking_inputs as input
+        on input.shoe_id = eligibility.shoe_id
+       and input.methodology_version = eligibility.methodology_version
+       and input.effective_date = eligibility.effective_date
+      where input.id is null
+    )
 )
 select check_name, issue_count
 from checks

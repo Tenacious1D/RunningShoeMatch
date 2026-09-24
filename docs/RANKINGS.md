@@ -58,7 +58,7 @@ Corrections to published history require an explicit policy. Prefer a traceable 
 
 ## Engine boundary
 
-The future ranking engine should be a framework-independent TypeScript module. It should consume typed shoe/category inputs and a ruleset, then return ordered results and score explanations. It must not import React or issue database queries.
+The implemented `lib/rankings/overall-score-v1.ts` engine is a framework-independent TypeScript module. It consumes typed scoring candidates and returns deterministic score breakdowns and ordering. It does not import React or issue database queries.
 
 Data-access and publication services should orchestrate loading candidates, invoking the engine, validating results, and writing a snapshot transactionally.
 
@@ -170,6 +170,12 @@ category results, validate the draft, and transition the run to `published`.
 The next data refresh selects it as current and compares it with what was
 previously current.
 
+## Overall Score v1
+
+The approved legacy-workbook score is implemented as `overall-score-v1`. It equally weights Retailer Feedback Score, Popularity Score, and Specification Feature Score. Rating sources, availability channels, threshold bands, freshness, exclusions, and tie rules are frozen in `AUTOMATED_RANKINGS.md`.
+
+The generator creates an existing `ranking_run` plus `ranking_results` snapshot in draft status. Public querying and movement calculation are unchanged.
+
 ## Deferred decisions
 
-The actual score formula, source weighting, category rules, publication cadence, tie policy, correction policy, and minimum data-quality thresholds remain future implementation decisions.
+Publication cadence and the correction policy remain operational decisions. Any score-formula change requires a new methodology version rather than editing `overall-score-v1`.

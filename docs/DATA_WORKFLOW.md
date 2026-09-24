@@ -79,6 +79,28 @@ Never put affiliate URLs in React components, MDX, or client-side configuration.
 
 ## E. Importing ranking snapshots
 
+### Preferred automated Overall Score v1 workflow
+
+Maintain the two source spreadsheets from:
+
+- `data/templates/ranking-review-observations-import-template.csv`
+- `data/templates/ranking-inputs-import-template.csv`
+
+Then run:
+
+```powershell
+npm run import:ranking-reviews -- data/imports/my-ranking-reviews.csv --dry-run
+npm run import:ranking-reviews -- data/imports/my-ranking-reviews.csv --apply
+npm run import:ranking-inputs -- data/imports/my-ranking-inputs.csv --dry-run
+npm run import:ranking-inputs -- data/imports/my-ranking-inputs.csv --apply
+npm run rankings:generate -- --effective-date 2026-10-01 --dry-run
+npm run rankings:generate -- --effective-date 2026-10-01 --apply
+```
+
+The generator creates a draft from `overall-score-v1`; it never publishes. Formula and source details are in `docs/AUTOMATED_RANKINGS.md`.
+
+### Manual snapshot workflow
+
 Use the complete snapshot format in `data/templates/rankings-import-template.csv`:
 
 ```powershell

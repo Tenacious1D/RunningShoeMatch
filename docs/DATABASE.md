@@ -95,6 +95,18 @@ The unique key `(shoe_id, metric_key, effective_date, metric_version, data_sourc
 
 ## Ranking snapshots and monthly history
 
+### Automated ranking source data
+
+Overall Score v1 adds three private, versioned input tables:
+
+- `shoe_review_observations` stores dated rating and review-count observations for the five approved sources.
+- `shoe_ranking_inputs` stores human-reviewed fit and cushion classifications for a named methodology and effective date.
+- `shoe_ranking_category_eligibility` stores dated, explicit shoe/category membership for a named methodology.
+
+Anonymous visitors cannot read or mutate these operational inputs. Authenticated users can read them only when `private.is_admin()` confirms allowlist membership. Local scripts write through server-only service credentials and transactional RPC functions.
+
+These inputs are intentionally separate from `shoe_metrics`: they reproduce a specific ranking methodology and do not redefine Metric Vocabulary Version 1. The generator writes ordinary draft `ranking_runs` and `ranking_results`, so historical publication and public RLS behavior remain unchanged.
+
 A `ranking_run` is a publication snapshot that can contain multiple categories. Its `effective_date` identifies the ranking period and `methodology_version` identifies the deterministic ruleset. Each `ranking_result` connects one run, one category, and one shoe with a total score, rank, component breakdown, and provenance metadata.
 
 The unique `(ranking_run_id, ranking_category_id, shoe_id)` constraint prevents a shoe from appearing twice in the same category/run. The import and publication functions additionally require one contiguous rank sequence (`1..N`) with no duplicate ranks per category. Rank is not a table-level unique key, so any future tie policy must be introduced deliberately in the importer, publication checks, tests, and documentation.
